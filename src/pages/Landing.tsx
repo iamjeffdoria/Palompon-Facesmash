@@ -11,6 +11,7 @@ import UploadPhotoModal from "../components/UploadPhotoModal";
 import MatchFoundModal from "../components/MatchFoundModal";
 import SmashOrPassDeck from "../components/SmashOrPassDeck";
 import Toast, { type ToastData } from "../components/Toast";
+import FeaturedProfileModal from "../components/FeaturedProfileModal";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
 import { seedBots } from "../lib/seedBots";
 
@@ -137,6 +138,7 @@ export default function Landing() {
                     <a href="#board" className="hover:text-coral transition-colors">Leaderboard</a>
                   </>
                 )}
+                <FeaturedProfileModal />
                 {user ? (
                   <>
                     <button
@@ -171,6 +173,7 @@ export default function Landing() {
 
         {mobileMenuOpen && (
           <div className="md:hidden border-t border-ink/15 px-4 sm:px-6 py-4 flex flex-col gap-4 text-sm">
+            <FeaturedProfileModal />
             {!loading && (
               <>
                 {!user && (

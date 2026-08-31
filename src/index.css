@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", serif;
+  --font-body: "Space Grotesk", sans-serif;
+  --color-ink: #15201b;
+  --color-sand: #f2ecd9;
+  --color-coral: #e9522c;
+  --color-teal: #0e6b63;
+  --color-mango: #e8aa3d;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-sand);
+  color: var(--color-ink);
+}

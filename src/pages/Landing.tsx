@@ -121,8 +121,8 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-[100vw] overflow-x-hidden bg-sand text-ink font-body">
-      <header className="border-b border-ink/15">
+    <div className="min-h-screen w-full max-w-[100vw] bg-sand text-ink font-body">
+      <header className="sticky top-0 z-40 bg-sand border-b border-ink/15">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-4 flex items-center justify-between">
           <div className="font-display text-xl tracking-tight">
             Palompon<span className="text-coral italic">Facesmash</span>

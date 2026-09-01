@@ -6,9 +6,13 @@ import SmashOrPassCard from "./SmashOrPassCard";
 
 export default function SmashOrPassDeck({
   myUid,
+  myName,
+  myPhotoURL,
   onRequireSignIn,
 }: {
   myUid: string | undefined;
+  myName: string | null;
+  myPhotoURL: string | null;
   onRequireSignIn: () => void;
 }) {
   const { deck, loading } = useSmashDeck(myUid);
@@ -37,9 +41,14 @@ export default function SmashOrPassDeck({
       return;
     }
     if (votingId) return;
+    const photo = deck.find((p) => p.id === photoId);
+    if (!photo) return;
     setVotingId(photoId);
     try {
-      await castSmashVote(photoId, myUid, choice);
+      await castSmashVote(photoId, myUid, choice, photo.uid, {
+        name: myName ?? "Someone",
+        photoURL: myPhotoURL,
+      });
     } catch (err) {
       console.error(err);
     } finally {

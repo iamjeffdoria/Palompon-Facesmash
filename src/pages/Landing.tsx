@@ -41,7 +41,10 @@ export default function Landing() {
     }
     setVotingFor(`${matchId}:${sideUid}`);
     try {
-      await castVote(matchId, user.uid, sideUid);
+      await castVote(matchId, user.uid, sideUid, {
+        name: user.displayName ?? "Someone",
+        photoURL: user.photoURL,
+      });
     } catch (err) {
       console.error(err);
     } finally {
@@ -64,7 +67,10 @@ export default function Landing() {
     const freshName = auth.currentUser?.displayName?.split(" ")[0];
     setToast({ message: `Welcome${freshName ? `, ${freshName}` : ""}!`, type: "success" });
     if (pendingVote && freshUid) {
-      castVote(pendingVote.matchId, freshUid, pendingVote.sideUid).catch(console.error);
+      castVote(pendingVote.matchId, freshUid, pendingVote.sideUid, {
+        name: freshName ?? "Someone",
+        photoURL: auth.currentUser?.photoURL ?? null,
+      }).catch(console.error);
       setPendingVote(null);
     }
     if (pendingUpload) {
@@ -151,7 +157,12 @@ export default function Landing() {
         <LeaderboardCard />
       </section>
 
-      <SmashOrPassDeck myUid={user?.uid} onRequireSignIn={() => setShowSignIn(true)} />
+      <SmashOrPassDeck
+        myUid={user?.uid}
+        myName={user?.displayName ?? null}
+        myPhotoURL={user?.photoURL ?? null}
+        onRequireSignIn={() => setShowSignIn(true)}
+      />
 
       {!user && <MarketingSections />}
 

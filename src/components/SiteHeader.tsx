@@ -2,6 +2,7 @@ import { Menu, Camera } from "lucide-react";
 import type { User } from "firebase/auth";
 import AccountMenu from "./AccountMenu";
 import FeaturedProfileModal from "./FeaturedProfileModal";
+import NotificationBell from "./NotificationBell";
 
 export default function SiteHeader({
   user,
@@ -46,6 +47,7 @@ export default function SiteHeader({
                     <Camera size={15} />
                     Post photo
                   </button>
+                  <NotificationBell uid={user.uid} />
                   <AccountMenu user={user} onSignOut={onLogOut} />
                 </>
               ) : (
@@ -79,7 +81,10 @@ export default function SiteHeader({
 
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-ink/15 px-4 sm:px-6 py-4 flex flex-col gap-4 text-sm">
-          <FeaturedProfileModal />
+          <div className="flex items-center justify-between">
+            <FeaturedProfileModal />
+            {user && <NotificationBell uid={user.uid} />}
+          </div>
           {!loading && (
             <>
               {!user && (

@@ -11,11 +11,12 @@ export interface SmashPhoto {
   smashCount: number;
   passCount: number;
   createdAt: number;
+  myChoice?: "smash" | "pass" | null;
 }
 
 export function useSmashDeck(myUid: string | undefined, max = 30) {
   const [photos, setPhotos] = useState<SmashPhoto[]>([]);
-  const [swipedIds, setSwipedIds] = useState<Set<string>>(new Set());
+  const [mySwipes, setMySwipes] = useState<Record<string, "smash" | "pass">>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,18 +30,24 @@ export function useSmashDeck(myUid: string | undefined, max = 30) {
 
   useEffect(() => {
     if (!myUid) {
-      setSwipedIds(new Set());
+      setMySwipes({});
       return;
     }
     const q = query(collection(db, "smashSwipes"), where("uid", "==", myUid));
     const unsub = onSnapshot(q, (snap) => {
-      setSwipedIds(new Set(snap.docs.map((d) => d.data().photoId as string)));
+      const next: Record<string, "smash" | "pass"> = {};
+      snap.docs.forEach((d) => {
+        const data = d.data();
+        next[data.photoId as string] = data.choice as "smash" | "pass";
+      });
+      setMySwipes(next);
     });
     return () => unsub();
   }, [myUid]);
 
-  // Show your own photo too, just exclude anything you've already swiped on.
-  const deck = photos.filter((p) => !swipedIds.has(p.id));
+  // Keep every photo visible — attach your swipe choice (if any) so the card
+  // can show a status instead of hiding fully-swiped photos from the deck.
+  const deck = photos.map((p) => ({ ...p, myChoice: mySwipes[p.id] ?? null }));
 
   return { deck, loading };
 }

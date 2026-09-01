@@ -25,6 +25,17 @@ export default function SmashOrPassCard({
 
       {isOwn ? (
         <p className="text-center text-[10px] text-ink/40 pb-2">Your photo</p>
+      ) : photo.myChoice ? (
+        <div className="flex items-center justify-center pb-2">
+          <span
+            className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full ${
+              photo.myChoice === "smash" ? "bg-coral/15 text-coral" : "bg-ink/10 text-ink/50"
+            }`}
+          >
+            {photo.myChoice === "smash" ? <Flame size={10} /> : <X size={10} />}
+            {photo.myChoice === "smash" ? "Smashed" : "Passed"}
+          </span>
+        </div>
       ) : (
         <div className="flex items-center justify-center gap-2 pb-2">
           <button

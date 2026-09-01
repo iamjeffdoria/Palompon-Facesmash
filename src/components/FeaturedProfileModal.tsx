@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, X, UserPlus } from "lucide-react";
+import { Sparkles, X, UserPlus, Crown } from "lucide-react";
 import { useFeaturedAndNewest } from "../hooks/useFeaturedAndNewest";
 
 export default function FeaturedProfileModal() {
@@ -18,60 +18,84 @@ export default function FeaturedProfileModal() {
 
       {open && (
         <div
-          className="fixed inset-0 bg-ink/50 flex items-center justify-center px-4 z-50"
+          className="fixed inset-0 bg-ink/60 flex items-center justify-center px-4 py-8 z-50"
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-sand max-w-sm w-full max-h-[85vh] overflow-y-auto border border-ink/15"
+            className="bg-sand max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-ink/15"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-ink/15">
-              <h3 className="font-display text-xl">Spotlight</h3>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-ink/15 sticky top-0 bg-sand z-10">
+              <h3 className="font-display text-2xl">Spotlight</h3>
               <button onClick={() => setOpen(false)} aria-label="Close" className="text-ink/50 hover:text-ink transition-colors">
-                <X size={20} />
+                <X size={22} />
               </button>
             </div>
 
-            <div className="p-5">
-              <p className="text-xs tracking-wide text-mango font-medium mb-3 flex items-center gap-1.5">
-                <Sparkles size={13} />
+            {/* Featured — hero card */}
+            <div className="p-6">
+              <p className="text-xs tracking-wide text-mango font-semibold mb-4 flex items-center gap-1.5">
+                <Sparkles size={14} />
                 FEATURED PROFILE OF THE DAY
               </p>
+
               {loading ? (
-                <div className="h-32 flex items-center justify-center text-ink/40 text-sm">Loading...</div>
+                <div className="h-40 flex items-center justify-center text-ink/40 text-sm bg-mango/10">Loading...</div>
               ) : featured ? (
-                <div className="flex items-center gap-4">
-                  <img src={featured.photoURL} alt={featured.name} className="w-20 h-24 object-cover" />
-                  <div>
-                    <p className="font-medium">{featured.name}</p>
-                    <p className="text-xs text-ink/50">{featured.barangay}</p>
-                    <p className="text-xs text-teal font-medium mt-1">{featured.totalVotes} total votes</p>
+                <div className="relative bg-mango/15 border-2 border-mango overflow-hidden">
+                  <div className="absolute top-3 right-3 bg-mango text-ink rounded-full p-1.5">
+                    <Crown size={16} />
+                  </div>
+                  <div className="flex items-center gap-6 p-6">
+                    <img
+                      src={featured.photoURL}
+                      alt={featured.name}
+                      className="w-28 h-36 object-cover border-2 border-mango shrink-0"
+                    />
+                    <div>
+                      <p className="font-display text-2xl leading-tight">{featured.name}</p>
+                      <p className="text-sm text-ink/60 mt-1">{featured.barangay}</p>
+                      <p className="text-sm text-teal font-semibold mt-3 bg-teal/10 inline-block px-2.5 py-1">
+                        {featured.totalVotes} total votes
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-ink/50">No standout yet — be the first!</p>
+                <div className="bg-mango/10 border-2 border-dashed border-mango/40 py-10 text-center text-sm text-ink/50">
+                  No standout yet — be the first!
+                </div>
               )}
             </div>
 
-            <div className="border-t border-ink/15 p-5">
-              <p className="text-xs tracking-wide text-teal font-medium mb-3 flex items-center gap-1.5">
-                <UserPlus size={13} />
+            {/* Newest members — card grid */}
+            <div className="border-t border-ink/15 p-6">
+              <p className="text-xs tracking-wide text-teal font-semibold mb-4 flex items-center gap-1.5">
+                <UserPlus size={14} />
                 NEWEST MEMBERS
               </p>
+
               {newest.length > 0 ? (
-                <ul className="space-y-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {newest.map((p) => (
-                    <li key={p.uid} className="flex items-center gap-3">
-                      <img src={p.photoURL} alt={p.name} className="w-10 h-12 object-cover shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium truncate">{p.name}</p>
-                        <p className="text-xs text-ink/50 truncate">{p.barangay}</p>
-                      </div>
-                    </li>
+                    <div
+                      key={p.uid}
+                      className="bg-teal/10 border border-teal/30 p-3 flex flex-col items-center text-center hover:bg-teal/20 transition-colors"
+                    >
+                      <img
+                        src={p.photoURL}
+                        alt={p.name}
+                        className="w-16 h-20 object-cover mb-2 border border-teal/30"
+                      />
+                      <p className="text-sm font-medium leading-tight truncate w-full">{p.name}</p>
+                      <p className="text-xs text-ink/50 truncate w-full">{p.barangay}</p>
+                    </div>
                   ))}
-                </ul>
+                </div>
               ) : (
-                <p className="text-sm text-ink/50">Nobody yet — post the first photo!</p>
+                <div className="bg-teal/10 border-2 border-dashed border-teal/40 py-10 text-center text-sm text-ink/50">
+                  Nobody yet — post the first photo!
+                </div>
               )}
             </div>
           </div>

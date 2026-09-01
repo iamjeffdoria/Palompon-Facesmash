@@ -1,22 +1,26 @@
 import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
-import { Camera, Flame } from "lucide-react";
+import { Camera, Flame, Swords, Layers } from "lucide-react";
 import { getCroppedImg } from "../lib/cropImage";
+import { PALOMPON_BARANGAYS } from "../lib/barangays";
+
+export type UploadDestination = "match" | "smash" | "both";
 
 export default function UploadPhotoModal({
   onClose,
   onUpload,
 }: {
   onClose: () => void;
-  onUpload: (file: File, includeInSmashOrPass: boolean) => Promise<void>;
+  onUpload: (file: File, destination: UploadDestination, barangay: string) => Promise<void>;
 }) {
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [rawPreview, setRawPreview] = useState<string | null>(null);
   const [finalFile, setFinalFile] = useState<File | null>(null);
   const [finalPreview, setFinalPreview] = useState<string | null>(null);
   const [cropping, setCropping] = useState(false);
-  const [includeSmash, setIncludeSmash] = useState(true);
+  const [destination, setDestination] = useState<UploadDestination>("both");
+  const [barangay, setBarangay] = useState(() => localStorage.getItem("lastBarangay") ?? "");
 
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -66,10 +70,14 @@ export default function UploadPhotoModal({
       setError("Pick a photo first.");
       return;
     }
+    if (!barangay) {
+      setError("Select your barangay.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
-      await onUpload(finalFile, includeSmash);
+      await onUpload(finalFile, destination, barangay);
       onClose();
     } catch (err) {
       setError("Upload didn't go through. Try again.");
@@ -79,14 +87,23 @@ export default function UploadPhotoModal({
     }
   }
 
+  const destinations: { value: UploadDestination; label: string; icon: typeof Swords }[] = [
+    { value: "match", label: "Match Card", icon: Swords },
+    { value: "smash", label: "Smash or Pass", icon: Flame },
+    { value: "both", label: "Both", icon: Layers },
+  ];
+
   return (
-    <div className="fixed inset-0 bg-ink/50 flex items-center justify-center px-6 z-50" onClick={onClose}>
-      <div className="bg-sand max-w-sm w-full p-8 border border-ink/15" onClick={(e) => e.stopPropagation()}>
-        <h3 className="font-display text-2xl mb-3">Post your photo</h3>
+    <div className="fixed inset-0 bg-ink/50 flex items-center justify-center px-4 z-50" onClick={onClose}>
+      <div
+        className="bg-sand max-w-lg w-full p-7 border border-ink/15"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="font-display text-xl mb-4">Post your photo</h3>
 
         {cropping && rawPreview ? (
           <>
-            <div className="relative w-full h-64 bg-ink/10 mb-3">
+            <div className="relative w-full h-56 bg-ink/10 mb-3">
               <Cropper
                 image={rawPreview}
                 crop={crop}
@@ -104,74 +121,96 @@ export default function UploadPhotoModal({
               step={0.01}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-full mb-4 accent-coral"
+              className="w-full mb-3 accent-coral"
             />
             <button
               onClick={handleConfirmCrop}
-              className="w-full bg-coral text-sand py-3 font-medium hover:bg-ink transition-colors mb-2"
+              className="w-full bg-coral text-sand py-2.5 font-medium hover:bg-ink transition-colors mb-2"
             >
               Use this crop
             </button>
             <button
               onClick={handleUseWhole}
-              className="w-full text-sm text-ink/50 hover:text-ink py-2 transition-colors"
+              className="w-full text-sm text-ink/50 hover:text-ink py-1.5 transition-colors"
             >
               Skip cropping, use whole photo
             </button>
           </>
         ) : (
-          <>
-            <label className="block mb-4 cursor-pointer">
-              <div className="w-full max-w-[200px] mx-auto aspect-[3/4] border border-dashed border-ink/25 flex items-center justify-center overflow-hidden mb-2">
+          <div className="flex gap-4">
+            {/* Photo picker — matches the 3:4 crop aspect so preview shows the real result */}
+            <label className="shrink-0 cursor-pointer">
+              <div className="w-32 h-[170px] border border-dashed border-ink/25 flex items-center justify-center overflow-hidden">
                 {finalPreview ? (
-                  <img src={finalPreview} alt="" className="w-full h-full object-contain" />
+                  <img src={finalPreview} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="flex flex-col items-center gap-2 text-ink/40 px-4 text-center">
-                    <Camera size={28} strokeWidth={1.5} />
-                    <span className="text-sm">Tap to choose a photo</span>
+                  <div className="flex flex-col items-center gap-1 text-ink/40 px-2 text-center">
+                    <Camera size={24} strokeWidth={1.5} />
+                    <span className="text-[10px] leading-tight">Choose photo</span>
                   </div>
                 )}
               </div>
               <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
             </label>
 
-            {rawPreview && (
-              <button
-                onClick={() => setCropping(true)}
-                className="w-full text-sm text-coral hover:text-ink transition-colors mb-3"
+            {/* Right column: options */}
+            <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+              {rawPreview && (
+                <button
+                  onClick={() => setCropping(true)}
+                  className="text-xs text-coral hover:text-ink transition-colors text-left"
+                >
+                  Adjust crop
+                </button>
+              )}
+
+              <select
+                value={barangay}
+                onChange={(e) => {
+                  setBarangay(e.target.value);
+                  localStorage.setItem("lastBarangay", e.target.value);
+                }}
+                className="w-full border border-ink/20 bg-sand px-2.5 py-2 text-sm focus:outline-none focus:border-coral transition-colors"
               >
-                Adjust crop
-              </button>
-            )}
+                <option value="">Select your barangay</option>
+                {PALOMPON_BARANGAYS.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
 
-            <label className="flex items-start gap-3 mb-4 p-3 border border-ink/15 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={includeSmash}
-                onChange={(e) => setIncludeSmash(e.target.checked)}
-                className="mt-0.5 accent-coral"
-              />
-              <span className="text-sm">
-                <span className="font-medium flex items-center gap-1.5">
-                  <Flame size={14} className="text-coral" />
-                  Also add to Smash or Pass
-                </span>
-                <span className="text-ink/50 block mt-0.5">
-                  Your photo shows up in the swipe deck too, separate from your VS matchup.
-                </span>
-              </span>
-            </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {destinations.map(({ value, label, icon: Icon }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setDestination(value)}
+                    className={`flex flex-col items-center gap-1 py-2 px-1 text-[10px] font-medium border transition-colors ${
+                      destination === value
+                        ? "border-coral bg-coral/10 text-coral"
+                        : "border-ink/15 text-ink/50 hover:border-ink/30"
+                    }`}
+                  >
+                    <Icon size={14} />
+                    <span className="leading-tight text-center">{label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
-            {error && <p className="text-xs text-coral mb-3">{error}</p>}
+        {!cropping && (
+          <>
+            {error && <p className="text-xs text-coral mt-3">{error}</p>}
 
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-coral text-sand py-3 font-medium hover:bg-ink transition-colors mb-3 disabled:opacity-50"
+              className="w-full bg-coral text-sand py-2.5 font-medium hover:bg-ink transition-colors mt-4 mb-2 disabled:opacity-50"
             >
               {loading ? "Posting..." : "Post to the board"}
             </button>
-            <button onClick={onClose} className="w-full text-sm text-ink/50 hover:text-ink py-2 transition-colors">
+            <button onClick={onClose} className="w-full text-sm text-ink/50 hover:text-ink py-1.5 transition-colors">
               Cancel
             </button>
           </>

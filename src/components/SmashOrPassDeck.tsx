@@ -1,5 +1,5 @@
-import { useRef, useState, useMemo } from "react";
-import { Flame, ChevronLeft, ChevronRight, Search, X } from "lucide-react"; 
+import { useRef, useState, useMemo, useEffect } from "react";
+import { Flame, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useSmashDeck } from "../hooks/useSmashDeck";
 import { castSmashVote } from "../lib/smashOrPass";
 import SmashOrPassCard from "./SmashOrPassCard";
@@ -8,12 +8,16 @@ export default function SmashOrPassDeck({
   myUid,
   myName,
   myPhotoURL,
+  pendingSmash,
   onRequireSignIn,
+  onPendingSmashResolved,
 }: {
   myUid: string | undefined;
   myName: string | null;
   myPhotoURL: string | null;
-  onRequireSignIn: () => void;
+  pendingSmash: { photoId: string; choice: "smash" | "pass" } | null;
+  onRequireSignIn: (photoId: string, choice: "smash" | "pass") => void;
+  onPendingSmashResolved: () => void;
 }) {
   const { deck, loading } = useSmashDeck(myUid);
   const [votingId, setVotingId] = useState<string | null>(null);
@@ -37,7 +41,7 @@ export default function SmashOrPassDeck({
 
   async function handleVote(photoId: string, choice: "smash" | "pass") {
     if (!myUid) {
-      onRequireSignIn();
+      onRequireSignIn(photoId, choice);
       return;
     }
     if (votingId) return;
@@ -55,6 +59,17 @@ export default function SmashOrPassDeck({
       setVotingId(null);
     }
   }
+
+  // Resume a smash/pass that was queued while signed out, as soon as the
+  // person finishes signing in and this deck has the photo loaded.
+  useEffect(() => {
+    if (!myUid || !pendingSmash || loading) return;
+    const photo = deck.find((p) => p.id === pendingSmash.photoId);
+    if (!photo) return; // photo not loaded into this deck yet, wait
+    handleVote(pendingSmash.photoId, pendingSmash.choice);
+    onPendingSmashResolved();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myUid, pendingSmash, loading, deck]);
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-8 border-t border-ink/15">

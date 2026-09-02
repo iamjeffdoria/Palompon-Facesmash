@@ -17,8 +17,20 @@ export default function SignInModal({
       await onSignIn();
       onClose();
     } catch (err) {
-      setError("Sign-in didn't go through. Try again.");
-      console.error(err);
+      const code = (err as { code?: string })?.code;
+      const isUserCancelled =
+        code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request";
+
+      if (!isUserCancelled) {
+        if (code === "auth/popup-blocked") {
+          setError("Your browser blocked the sign-in popup. Allow popups for this site and try again.");
+        } else if (code === "auth/network-request-failed") {
+          setError("No connection — check your internet and try again.");
+        } else {
+          setError("Sign-in didn't go through. Try again.");
+        }
+        console.error(err);
+      }
     } finally {
       setLoading(false);
     }

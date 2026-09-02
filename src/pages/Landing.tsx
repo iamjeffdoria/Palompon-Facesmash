@@ -22,6 +22,7 @@ export default function Landing() {
   const [matchPhotoId, setMatchPhotoId] = useState<string | null>(null);
   const [matchLocalPreview, setMatchLocalPreview] = useState<string | null>(null);
   const [pendingVote, setPendingVote] = useState<{ matchId: string; sideUid: string } | null>(null);
+  const [pendingSmash, setPendingSmash] = useState<{ photoId: string; choice: "smash" | "pass" } | null>(null);
   const [votingFor, setVotingFor] = useState<string | null>(null);
   const [pendingUpload, setPendingUpload] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
@@ -66,13 +67,19 @@ export default function Landing() {
     const freshUid = auth.currentUser?.uid;
     const freshName = auth.currentUser?.displayName?.split(" ")[0];
     setToast({ message: `Welcome${freshName ? `, ${freshName}` : ""}!`, type: "success" });
+
     if (pendingVote && freshUid) {
       castVote(pendingVote.matchId, freshUid, pendingVote.sideUid, {
-        name: freshName ?? "Someone",
+        name: auth.currentUser?.displayName ?? "Someone",
         photoURL: auth.currentUser?.photoURL ?? null,
       }).catch(console.error);
       setPendingVote(null);
     }
+
+    // pendingSmash is intentionally NOT resolved here — SmashOrPassDeck
+    // resumes it itself once myUid becomes truthy, since it already has
+    // the deck data (photo owner's uid) needed to complete the smash.
+
     if (pendingUpload) {
       setPendingUpload(false);
       setShowUploadModal(true);
@@ -161,7 +168,12 @@ export default function Landing() {
         myUid={user?.uid}
         myName={user?.displayName ?? null}
         myPhotoURL={user?.photoURL ?? null}
-        onRequireSignIn={() => setShowSignIn(true)}
+        pendingSmash={pendingSmash}
+        onRequireSignIn={(photoId, choice) => {
+          setPendingSmash({ photoId, choice });
+          setShowSignIn(true);
+        }}
+        onPendingSmashResolved={() => setPendingSmash(null)}
       />
 
       {!user && <MarketingSections />}

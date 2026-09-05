@@ -62,7 +62,10 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
   function handleToggle() {
     const next = !open;
     setOpen(next);
-    if (next && unreadCount > 0) {
+    // Mark read on CLOSE, not open — so the unread highlight is actually
+    // visible while the person is looking at the panel, instead of being
+    // flipped to read before they've had a chance to see it.
+    if (!next && unreadCount > 0) {
       markAllNotificationsRead(notifications).catch(console.error);
     }
   }
@@ -86,7 +89,13 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div
+            className="fixed inset-0 z-40"
+            onClick={() => {
+              setOpen(false);
+              if (unreadCount > 0) markAllNotificationsRead(notifications).catch(console.error);
+            }}
+          />
           <div className="absolute right-0 top-full mt-2 w-80 max-w-[90vw] bg-sand border border-ink/15 z-50 shadow-lg">
             <div className="px-4 py-3 border-b border-ink/10">
               <p className="font-display italic text-lg">Notifications</p>
@@ -108,8 +117,10 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
                           g.ids.forEach((id) => markNotificationRead(id).catch(console.error));
                         }
                       }}
-                      className={`w-full flex items-start gap-3 px-4 py-3 text-left border-b border-ink/5 last:border-0 transition-colors hover:bg-ink/5 ${
-                        !g.read ? "bg-teal/10" : ""
+                      className={`w-full flex items-start gap-3 px-4 py-3 text-left border-b border-ink/5 last:border-0 transition-colors ${
+                        !g.read
+                          ? "bg-coral/10 border-l-4 border-l-coral hover:bg-coral/15"
+                          : "border-l-4 border-l-transparent opacity-60 hover:bg-ink/5"
                       }`}
                     >
                       <span className="relative shrink-0">
@@ -133,7 +144,7 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
                         </span>
                       </span>
                       <span className="flex-1 min-w-0">
-                        <span className="text-sm leading-snug">
+                        <span className={`text-sm leading-snug ${!g.read ? "text-ink" : "text-ink/60"}`}>
                           <span className="font-medium">{actorLabel}</span>{" "}
                           {isSmash ? "smashed your photo 🔥" : "voted for you in a matchup"}
                         </span>

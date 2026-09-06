@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { useActiveMatches } from "../hooks/useActiveMatches";
+import { useNotifications } from "../hooks/useNotifications";
+import { useStreak } from "../hooks/useStreak";
 import { castVote } from "../lib/vote";
 import { useAuth } from "../hooks/useAuth";
 import { auth } from "../lib/firebase";
@@ -29,6 +31,38 @@ export default function Landing() {
   const [toast, setToast] = useState<ToastData | null>(null);
   const { user, loading, signInWithGoogle, logOut } = useAuth();
   const { matches } = useActiveMatches();
+  const { notifications } = useNotifications(user?.uid);
+  const streak = useStreak(user?.uid);
+  const lastSeenNotifAt = useRef<number | null>(null);
+
+  // Pop a toast the instant a new vote/smash notification arrives, even if
+  // the bell panel is closed. On first load (or right after sign-in), we
+  // just record the most recent timestamp without toasting — otherwise
+  // every notification you already had would toast all at once.
+  useEffect(() => {
+    if (!user) {
+      lastSeenNotifAt.current = null;
+      return;
+    }
+    if (notifications.length === 0) return;
+    const newestAt = notifications[0].createdAt;
+    if (lastSeenNotifAt.current === null) {
+      lastSeenNotifAt.current = newestAt;
+      return;
+    }
+    const freshOnes = notifications.filter((n) => n.createdAt > lastSeenNotifAt.current!);
+    if (freshOnes.length > 0) {
+      const latest = freshOnes[0];
+      setToast({
+        message:
+          latest.type === "smash"
+            ? `🔥 ${latest.actorName} smashed your photo!`
+            : `${latest.actorName} voted for you!`,
+        type: "success",
+      });
+      lastSeenNotifAt.current = newestAt;
+    }
+  }, [notifications, user]);
 
   async function handleVoteClick(matchId: string, sideUid: string) {
     if (!user) {
@@ -115,6 +149,7 @@ export default function Landing() {
       <SiteHeader
         user={user}
         loading={loading}
+        streak={streak}
         mobileMenuOpen={mobileMenuOpen}
         onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)}
         onShowSignIn={() => setShowSignIn(true)}

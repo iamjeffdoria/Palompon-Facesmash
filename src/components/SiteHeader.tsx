@@ -7,6 +7,7 @@ import NotificationBell from "./NotificationBell";
 export default function SiteHeader({
   user,
   loading,
+  streak,
   mobileMenuOpen,
   onToggleMobileMenu,
   onShowSignIn,
@@ -15,6 +16,7 @@ export default function SiteHeader({
 }: {
   user: User | null;
   loading: boolean;
+  streak: number | null;
   mobileMenuOpen: boolean;
   onToggleMobileMenu: () => void;
   onShowSignIn: () => void;
@@ -48,7 +50,7 @@ export default function SiteHeader({
                     Post photo
                   </button>
                   <NotificationBell uid={user.uid} />
-                  <AccountMenu user={user} onSignOut={onLogOut} />
+                  <AccountMenu user={user} streak={streak} onSignOut={onLogOut} />
                 </>
               ) : (
                 <button

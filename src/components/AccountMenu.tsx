@@ -1,11 +1,14 @@
 import { useState } from "react";
+import { Flame } from "lucide-react";
 import type { User } from "firebase/auth";
 
 export default function AccountMenu({
   user,
+  streak,
   onSignOut,
 }: {
   user: User;
+  streak: number | null;
   onSignOut: () => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -24,6 +27,12 @@ export default function AccountMenu({
           </span>
         )}
         <span className="hidden sm:inline">{user.displayName?.split(" ")[0]}</span>
+        {streak !== null && streak > 1 && (
+          <span className="flex items-center gap-0.5 text-xs font-medium text-coral">
+            <Flame size={12} />
+            {streak}
+          </span>
+        )}
       </button>
 
       {open && (

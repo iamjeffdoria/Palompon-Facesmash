@@ -1,5 +1,5 @@
 import { useRef, useMemo, useState } from "react";
-import { Camera, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Search, Swords, X } from "lucide-react";
 import MatchCard from "./MatchCard";
 import type { MatchData } from "../hooks/useLatestMatch";
 
@@ -42,8 +42,12 @@ export default function MatchupBoard({
     <div className="min-w-0">
       <div className="flex items-center justify-between gap-3 mb-4">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-coral animate-pulse" />
-          <span className="text-xs tracking-wide text-coral font-medium">Voting now</span>
+          <Swords size={16} className="text-coral" />
+          <span className="text-xs tracking-wide text-coral font-medium">Matchups</span>
+          <span className="hidden sm:flex items-center gap-1.5 text-xs text-ink/40 ml-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+            live
+          </span>
         </div>
         {hasUser && (
           <button

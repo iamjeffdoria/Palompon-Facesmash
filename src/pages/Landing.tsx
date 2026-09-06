@@ -14,7 +14,6 @@ import MatchFoundModal from "../components/MatchFoundModal";
 import SmashOrPassDeck from "../components/SmashOrPassDeck";
 import Toast, { type ToastData } from "../components/Toast";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
-import { seedBots } from "../lib/seedBots";
 
 export default function Landing() {
   const [showSignIn, setShowSignIn] = useState(false);
@@ -30,9 +29,6 @@ export default function Landing() {
   const [toast, setToast] = useState<ToastData | null>(null);
   const { user, loading, signInWithGoogle, logOut } = useAuth();
   const { matches } = useActiveMatches();
-
-  // @ts-ignore
-  window.seedBots = seedBots;
 
   async function handleVoteClick(matchId: string, sideUid: string) {
     if (!user) {

@@ -37,18 +37,7 @@ async function uploadToCloudinary(file: File): Promise<string> {
   return data.secure_url as string;
 }
 
-async function pickRandomBot(excludeUid?: string) {
-  const botsSnap = await getDocs(collection(db, "bots"));
-  const bots = botsSnap.docs.filter((d) => d.id !== excludeUid);
-  if (bots.length === 0) return null;
-  const pick = bots[Math.floor(Math.random() * bots.length)];
-  return { uid: pick.id, ...pick.data() } as {
-    uid: string;
-    name: string;
-    barangay: string;
-    photoURL: string;
-  };
-}
+
 
 export async function uploadPhotoAndQueue(
   file: File,
@@ -121,24 +110,11 @@ export async function uploadPhotoAndQueue(
         tx.update(opponentDoc.ref, { status: "matched", matchId: matchRef.id });
         tx.update(photoRef, { status: "matched", matchId: matchRef.id });
       });
-    } else {
-      const bot = await pickRandomBot(user.uid);
-      if (bot) {
-        await runTransaction(db, async (tx) => {
-          tx.set(matchRef, {
-            isBot: true,
-            createdAt: now,
-            closesAt: now + VOTING_WINDOW_MS,
-            sides: {
-              [myPhoto.uid]: myPhoto,
-              [bot.uid]: bot,
-            },
-            votes: { [myPhoto.uid]: 0, [bot.uid]: 0 },
-          });
-          tx.update(photoRef, { status: "matched", matchId: matchRef.id });
-        });
-      }
     }
+    // No opponent waiting yet — leave photo as "waiting". MatchFoundModal
+    // already listens for this photo's status via onSnapshot, and will
+    // flip to "matched" automatically once someone else uploads and the
+    // waitingQuery above pairs them together.
 
     return { photoId: photoRef.id };
   }

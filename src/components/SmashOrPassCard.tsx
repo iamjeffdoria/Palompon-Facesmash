@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Flame, X } from "lucide-react";
 import type { SmashPhoto } from "../hooks/useSmashDeck";
 
@@ -12,6 +13,13 @@ export default function SmashOrPassCard({
   voting: boolean;
   isOwn: boolean;
 }) {
+  const [pendingChoice, setPendingChoice] = useState<"smash" | "pass" | null>(null);
+
+  function handleVote(choice: "smash" | "pass") {
+    setPendingChoice(choice);
+    onVote(photo.id, choice);
+  }
+
   return (
     <div className="border-2 border-ink/70 bg-sand shrink-0 w-[45vw] max-w-[140px] sm:w-[140px] snap-start overflow-hidden">
       <div className="relative aspect-[3/4] bg-ink/5">
@@ -39,20 +47,28 @@ export default function SmashOrPassCard({
       ) : (
         <div className="flex items-center justify-center gap-2 pb-2">
           <button
-            onClick={() => onVote(photo.id, "pass")}
+            onClick={() => handleVote("pass")}
             disabled={voting}
             aria-label="Pass"
             className="w-8 h-8 rounded-full border-2 border-ink/20 flex items-center justify-center hover:border-ink hover:bg-ink/5 transition-colors disabled:opacity-40"
           >
-            <X size={14} className="text-ink/60" />
+            {voting && pendingChoice === "pass" ? (
+              <span className="w-3.5 h-3.5 border-2 border-ink/30 border-t-ink/70 rounded-full animate-spin" />
+            ) : (
+              <X size={14} className="text-ink/60" />
+            )}
           </button>
           <button
-            onClick={() => onVote(photo.id, "smash")}
+            onClick={() => handleVote("smash")}
             disabled={voting}
             aria-label="Smash"
             className="w-8 h-8 rounded-full bg-coral text-sand flex items-center justify-center hover:bg-ink transition-colors disabled:opacity-40"
           >
-            <Flame size={14} />
+            {voting && pendingChoice === "smash" ? (
+              <span className="w-3.5 h-3.5 border-2 border-sand/40 border-t-sand rounded-full animate-spin" />
+            ) : (
+              <Flame size={14} />
+            )}
           </button>
         </div>
       )}

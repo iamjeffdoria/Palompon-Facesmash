@@ -76,6 +76,10 @@ export default function SmashOrPassDeck({
       <div className="flex items-center gap-2 mb-4">
         <Flame size={16} className="text-coral" />
         <span className="text-xs tracking-wide text-coral font-medium">Smash or Pass</span>
+        <span className="hidden sm:flex items-center gap-1.5 text-xs text-ink/40 ml-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+          live
+        </span>
       </div>
 
       <div className="relative mb-5 max-w-sm">

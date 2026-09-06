@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bell, Flame, Heart } from "lucide-react";
+import { Bell, Flame, Heart, X } from "lucide-react";
 import { useNotifications, type AppNotification } from "../hooks/useNotifications";
 import { markAllNotificationsRead, markNotificationRead } from "../lib/notifications";
 import { timeAgo } from "../lib/timeAgo";
@@ -90,17 +90,27 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
       {open && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 bg-ink/20 z-40"
             onClick={() => {
               setOpen(false);
               if (unreadCount > 0) markAllNotificationsRead(notifications).catch(console.error);
             }}
           />
-          <div className="absolute right-0 top-full mt-2 w-80 max-w-[90vw] bg-sand border border-ink/15 z-50 shadow-lg">
-            <div className="px-4 py-3 border-b border-ink/10">
+          <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-80 max-w-md sm:max-w-[90vw] mx-auto sm:mx-0 bg-sand border border-ink/15 rounded-xl z-50 shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-ink/10">
               <p className="font-display italic text-lg">Notifications</p>
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  if (unreadCount > 0) markAllNotificationsRead(notifications).catch(console.error);
+                }}
+                aria-label="Close"
+                className="text-ink/40 hover:text-ink transition-colors p-1"
+              >
+                <X size={18} />
+              </button>
             </div>
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-[70vh] sm:max-h-96 overflow-y-auto">
               {grouped.length === 0 ? (
                 <p className="text-center text-sm text-ink/40 py-10 px-4">
                   Nothing yet — votes and smashes will show up here.
@@ -117,10 +127,8 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
                           g.ids.forEach((id) => markNotificationRead(id).catch(console.error));
                         }
                       }}
-                      className={`w-full flex items-start gap-3 px-4 py-3 text-left border-b border-ink/5 last:border-0 transition-colors ${
-                        !g.read
-                          ? "bg-coral/10 border-l-4 border-l-coral hover:bg-coral/15"
-                          : "border-l-4 border-l-transparent opacity-60 hover:bg-ink/5"
+                      className={`w-full flex items-start gap-3 px-4 py-3.5 text-left border-b border-ink/5 last:border-0 transition-colors ${
+                        !g.read ? "bg-coral/10 hover:bg-coral/15" : "hover:bg-ink/5"
                       }`}
                     >
                       <span className="relative shrink-0">
@@ -144,11 +152,13 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
                         </span>
                       </span>
                       <span className="flex-1 min-w-0">
-                        <span className={`text-sm leading-snug ${!g.read ? "text-ink" : "text-ink/60"}`}>
-                          <span className="font-medium">{actorLabel}</span>{" "}
-                          {isSmash ? "smashed your photo 🔥" : "voted for you in a matchup"}
+                        <span className="text-sm leading-snug text-ink">
+                          <span className="font-semibold">{actorLabel}</span>{" "}
+                          <span className="text-ink/70">
+                            {isSmash ? "smashed your photo 🔥" : "voted for you in a matchup"}
+                          </span>
                         </span>
-                        <span className="block text-xs text-ink/40 mt-0.5">{timeAgo(g.createdAt)}</span>
+                        <span className="block text-xs text-ink/40 mt-1">{timeAgo(g.createdAt)}</span>
                       </span>
                       {!g.read && <span className="w-2 h-2 rounded-full bg-coral shrink-0 mt-1.5" />}
                     </button>

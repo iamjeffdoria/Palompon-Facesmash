@@ -1,4 +1,4 @@
-import { Menu, Camera } from "lucide-react";
+import { Menu, Camera, Flame } from "lucide-react";
 import type { User } from "firebase/auth";
 import AccountMenu from "./AccountMenu";
 import FeaturedProfileModal from "./FeaturedProfileModal";
@@ -82,47 +82,59 @@ export default function SiteHeader({
       )}
 
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-ink/15 px-4 sm:px-6 py-4 flex flex-col gap-4 text-sm">
-          <div className="flex items-center justify-between">
-            <FeaturedProfileModal />
-            {user && <NotificationBell uid={user.uid} />}
-          </div>
-          {!loading && (
-            <>
-              {!user && (
-                <>
-                  <a href="#how" onClick={onToggleMobileMenu} className="hover:text-coral transition-colors">
-                    How it works
-                  </a>
-                  <a href="#board" onClick={onToggleMobileMenu} className="hover:text-coral transition-colors">
-                    Leaderboard
-                  </a>
-                </>
+        <div className="md:hidden border-t border-ink/15 text-sm">
+          {!loading && user && (
+            <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-ink/10 bg-ink/[0.02]">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" className="w-11 h-11 rounded-full shrink-0" />
+              ) : (
+                <span className="w-11 h-11 rounded-full bg-teal text-sand flex items-center justify-center text-sm font-medium shrink-0">
+                  {user.displayName?.[0] ?? "U"}
+                </span>
               )}
-              {user ? (
-                <div className="flex items-center gap-3">
-                  {user.photoURL ? (
-                    <img src={user.photoURL} alt="" className="w-9 h-9 rounded-full" />
-                  ) : (
-                    <span className="w-9 h-9 rounded-full bg-teal text-sand flex items-center justify-center text-sm font-medium">
-                      {user.displayName?.[0] ?? "U"}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium truncate">{user.displayName}</p>
+                  {streak !== null && streak > 0 && (
+                    <span className="flex items-center gap-0.5 text-xs font-medium text-coral shrink-0">
+                      <Flame size={12} />
+                      {streak}
                     </span>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{user.displayName}</p>
-                    <p className="text-xs text-ink/50 truncate">{user.email}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      onToggleMobileMenu();
-                      onLogOut();
-                    }}
-                    className="text-xs text-coral hover:text-ink transition-colors shrink-0"
-                  >
-                    Sign out
-                  </button>
                 </div>
-              ) : (
+                <p className="text-xs text-ink/50 truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={() => {
+                  onToggleMobileMenu();
+                  onLogOut();
+                }}
+                className="text-xs text-coral hover:text-ink transition-colors shrink-0"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+
+          <div className="px-4 sm:px-6 py-4 flex flex-col gap-4">
+            {!loading && user && (
+              <div className="flex items-center justify-between gap-3">
+                <FeaturedProfileModal />
+                <NotificationBell uid={user.uid} />
+              </div>
+            )}
+
+            {!loading && !user && (
+              <>
+                <div className="flex items-center justify-between">
+                  <FeaturedProfileModal />
+                </div>
+                <a href="#how" onClick={onToggleMobileMenu} className="hover:text-coral transition-colors">
+                  How it works
+                </a>
+                <a href="#board" onClick={onToggleMobileMenu} className="hover:text-coral transition-colors">
+                  Leaderboard
+                </a>
                 <button
                   onClick={() => {
                     onToggleMobileMenu();
@@ -132,9 +144,9 @@ export default function SiteHeader({
                 >
                   Sign in
                 </button>
-              )}
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       )}
     </header>

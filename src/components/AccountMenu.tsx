@@ -27,7 +27,7 @@ export default function AccountMenu({
           </span>
         )}
         <span className="hidden sm:inline">{user.displayName?.split(" ")[0]}</span>
-        {streak !== null && streak > 1 && (
+        {streak !== null && streak > 0 && (
           <span className="flex items-center gap-0.5 text-xs font-medium text-coral">
             <Flame size={12} />
             {streak}

@@ -150,7 +150,12 @@ export default function UploadPhotoModal({
                   </div>
                 )}
               </div>
-              <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+              <input
+                type="file"
+                accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif"
+                className="hidden"
+                onChange={handleFileChange}
+              />
             </label>
 
             {/* Right column: options */}

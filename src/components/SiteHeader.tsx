@@ -1,4 +1,4 @@
-import { Menu, Camera, Flame } from "lucide-react";
+import { ChevronDown, ChevronUp, Camera, Flame } from "lucide-react";
 import type { User } from "firebase/auth";
 import AccountMenu from "./AccountMenu";
 import FeaturedProfileModal from "./FeaturedProfileModal";
@@ -69,7 +69,11 @@ export default function SiteHeader({
           aria-label="Toggle menu"
           className="md:hidden p-2"
         >
-          <Menu size={22} strokeWidth={2} />
+          {mobileMenuOpen ? (
+            <ChevronUp size={22} strokeWidth={2} />
+          ) : (
+            <ChevronDown size={22} strokeWidth={2} />
+          )}
         </button>
       </div>
 

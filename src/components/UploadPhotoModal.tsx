@@ -32,6 +32,11 @@ export default function UploadPhotoModal({
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      setError("Please choose an image file.");
+      return;
+    }
+    setError("");
     setRawFile(f);
     setRawPreview(URL.createObjectURL(f));
     setFinalFile(f);
@@ -152,7 +157,6 @@ export default function UploadPhotoModal({
               </div>
               <input
                 type="file"
-                accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.heic,.heif"
                 className="hidden"
                 onChange={handleFileChange}
               />

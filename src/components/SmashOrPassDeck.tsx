@@ -11,6 +11,7 @@ export default function SmashOrPassDeck({
   pendingSmash,
   onRequireSignIn,
   onPendingSmashResolved,
+  onVoteError,
 }: {
   myUid: string | undefined;
   myName: string | null;
@@ -18,6 +19,7 @@ export default function SmashOrPassDeck({
   pendingSmash: { photoId: string; choice: "smash" | "pass" } | null;
   onRequireSignIn: (photoId: string, choice: "smash" | "pass") => void;
   onPendingSmashResolved: () => void;
+  onVoteError: () => void;
 }) {
   const { deck, loading } = useSmashDeck(myUid);
   const [votingId, setVotingId] = useState<string | null>(null);
@@ -55,6 +57,7 @@ export default function SmashOrPassDeck({
       });
     } catch (err) {
       console.error(err);
+      onVoteError();
     } finally {
       setVotingId(null);
     }

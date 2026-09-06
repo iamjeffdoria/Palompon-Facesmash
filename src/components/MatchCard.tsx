@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Flame, Check, X, Expand, Clock } from "lucide-react";
 import { useVoterRecord } from "../hooks/useVoterRecord";
 import type { MatchData } from "../hooks/useLatestMatch";
@@ -11,6 +11,22 @@ function formatTimeLeft(ms: number): string {
   const minutes = totalMinutes % 60;
   if (hours > 0) return `${hours}h ${minutes}m left`;
   return `${minutes}m left`;
+}
+
+// Briefly flags "popping" true whenever the given number changes, then
+// resets after 400ms — used to animate vote counts as they update live.
+function usePopOnChange(value: number) {
+  const [popping, setPopping] = useState(false);
+  const prevValue = useRef(value);
+  useEffect(() => {
+    if (value !== prevValue.current) {
+      prevValue.current = value;
+      setPopping(true);
+      const timer = setTimeout(() => setPopping(false), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [value]);
+  return popping;
 }
 
 export default function MatchCard({
@@ -33,6 +49,14 @@ export default function MatchCard({
     const interval = setInterval(() => setNow(Date.now()), 30000); // tick every 30s
     return () => clearInterval(interval);
   }, []);
+
+  // Sign-out (or switching accounts) changes myUid, which resets votedFor
+  // to null via useVoterRecord. Without this, a leftover "confirmingUid"
+  // from before sign-out would incorrectly show the "Sure?" prompt again
+  // instead of a clean, unvoted Vote button.
+  useEffect(() => {
+    setConfirmingUid(null);
+  }, [myUid]);
 
   const timeLeftMs = match.closesAt ? match.closesAt - now : Infinity;
   const isClosed = timeLeftMs <= 0;
@@ -68,79 +92,25 @@ export default function MatchCard({
         <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-coral text-sand font-display italic text-sm w-9 h-9 rounded-full flex items-center justify-center border-2 border-sand shadow-md">
           VS
         </span>
-        {orderedSides.map((p) => {
-          const isVoted = votedFor === p.uid;
-          const isOtherVoted = votedFor !== null && votedFor !== p.uid;
-          const voteCount = match.votes?.[p.uid] ?? 0;
-          const isVoting = votingFor === `${match.id}:${p.uid}`;
-          const isConfirming = confirmingUid === p.uid;
-
-          return (
-            <div
-              key={p.uid}
-              className={`flex flex-col items-center text-center px-3 py-6 min-w-0 transition-opacity ${
-                isOtherVoted ? "opacity-40" : ""
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => setViewingUid(p.uid)}
-                className="relative group w-16 h-20 mb-2 shrink-0"
-                aria-label={`View ${p.name}'s photo`}
-              >
-                <img src={p.photoURL} alt={p.name} className="w-full h-full object-cover" />
-                <span className="absolute inset-0 bg-ink/0 group-hover:bg-ink/30 transition-colors flex items-center justify-center">
-                  <Expand size={16} className="text-sand opacity-0 group-hover:opacity-100 transition-opacity" />
-                </span>
-              </button>
-
-              <div className="h-[2.4em] w-full flex items-center justify-center px-1">
-                <p className="font-medium text-xs leading-tight line-clamp-2">{p.name}</p>
-              </div>
-              <p className="text-[10px] text-ink/50 mb-1 h-[1.2em]">{p.barangay}</p>
-              <p className="text-[10px] text-teal font-medium mb-2">{voteCount} votes</p>
-              {isVoted ? (
-                <span className="inline-flex items-center gap-1 bg-teal/15 text-teal text-xs font-medium px-2.5 py-1 rounded-full">
-                  <Check size={12} />
-                  Voted
-                </span>
-              ) : isConfirming || isVoting ? (
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => onVote(match.id, p.uid)}
-                    disabled={votingFor !== null}
-                    className="bg-teal text-sand px-2.5 py-1.5 text-xs font-medium hover:bg-ink transition-colors disabled:opacity-40 flex items-center gap-1"
-                  >
-                    {isVoting ? (
-                      <span className="w-3 h-3 border-2 border-sand/40 border-t-sand rounded-full animate-spin" />
-                    ) : (
-                      <Check size={12} />
-                    )}
-                    Sure?
-                  </button>
-                  {!isVoting && (
-                    <button
-                      onClick={() => setConfirmingUid(null)}
-                      className="bg-ink/10 text-ink px-2 py-1.5 hover:bg-ink/20 transition-colors"
-                      aria-label="Cancel"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={() => setConfirmingUid(p.uid)}
-                  disabled={votedFor !== null || votingFor !== null || isClosed}
-                  className="bg-coral text-sand px-3 py-1.5 text-xs font-medium hover:bg-ink transition-colors disabled:opacity-40 disabled:hover:bg-coral flex items-center gap-1"
-                >
-                  <Flame size={12} />
-                  Vote
-                </button>
-              )}
-            </div>
-          );
-        })}
+        {orderedSides.map((p) => (
+          <MatchSide
+            key={p.uid}
+            side={p}
+            matchId={match.id}
+            voteCount={match.votes?.[p.uid] ?? 0}
+            isVoted={votedFor === p.uid}
+            isOtherVoted={votedFor !== null && votedFor !== p.uid}
+            isVoting={votingFor === `${match.id}:${p.uid}`}
+            isConfirming={confirmingUid === p.uid}
+            votedForSomeone={votedFor !== null}
+            votingInFlight={votingFor !== null}
+            isClosed={isClosed}
+            onVote={onVote}
+            onConfirm={() => setConfirmingUid(p.uid)}
+            onCancelConfirm={() => setConfirmingUid(null)}
+            onView={() => setViewingUid(p.uid)}
+          />
+        ))}
       </div>
 
       {viewingSide && (
@@ -150,6 +120,113 @@ export default function MatchCard({
           barangay={viewingSide.barangay}
           onClose={() => setViewingUid(null)}
         />
+      )}
+    </div>
+  );
+}
+
+interface MatchSideProps {
+  side: { uid: string; name: string; barangay: string; photoURL: string };
+  matchId: string;
+  voteCount: number;
+  isVoted: boolean;
+  isOtherVoted: boolean;
+  isVoting: boolean;
+  isConfirming: boolean;
+  votedForSomeone: boolean;
+  votingInFlight: boolean;
+  isClosed: boolean;
+  onVote: (matchId: string, sideUid: string) => void;
+  onConfirm: () => void;
+  onCancelConfirm: () => void;
+  onView: () => void;
+}
+
+function MatchSide({
+  side: p,
+  matchId,
+  voteCount,
+  isVoted,
+  isOtherVoted,
+  isVoting,
+  isConfirming,
+  votedForSomeone,
+  votingInFlight,
+  isClosed,
+  onVote,
+  onConfirm,
+  onCancelConfirm,
+  onView,
+}: MatchSideProps) {
+  const votePopped = usePopOnChange(voteCount);
+
+  return (
+    <div
+      className={`flex flex-col items-center text-center px-3 py-6 min-w-0 transition-opacity ${
+        isOtherVoted ? "opacity-40" : ""
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onView}
+        className="relative group w-16 h-20 mb-2 shrink-0"
+        aria-label={`View ${p.name}'s photo`}
+      >
+        <img src={p.photoURL} alt={p.name} className="w-full h-full object-cover" />
+        <span className="absolute inset-0 bg-ink/0 group-hover:bg-ink/30 transition-colors flex items-center justify-center">
+          <Expand size={16} className="text-sand opacity-0 group-hover:opacity-100 transition-opacity" />
+        </span>
+      </button>
+
+      <div className="h-[2.4em] w-full flex items-center justify-center px-1">
+        <p className="font-medium text-xs leading-tight line-clamp-2">{p.name}</p>
+      </div>
+      <p className="text-[10px] text-ink/50 mb-1 h-[1.2em]">{p.barangay}</p>
+      <p
+        className={`text-[10px] font-medium mb-2 inline-block transition-transform duration-300 ${
+          votePopped ? "scale-150 text-coral" : "scale-100 text-teal"
+        }`}
+      >
+        {voteCount} votes
+      </p>
+      {isVoted ? (
+        <span className="inline-flex items-center gap-1 bg-teal/15 text-teal text-xs font-medium px-2.5 py-1 rounded-full">
+          <Check size={12} />
+          Voted
+        </span>
+      ) : isConfirming || isVoting ? (
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => onVote(matchId, p.uid)}
+            disabled={votingInFlight}
+            className="bg-teal text-sand px-2.5 py-1.5 text-xs font-medium hover:bg-ink transition-colors disabled:opacity-40 flex items-center gap-1"
+          >
+            {isVoting ? (
+              <span className="w-3 h-3 border-2 border-sand/40 border-t-sand rounded-full animate-spin" />
+            ) : (
+              <Check size={12} />
+            )}
+            Sure?
+          </button>
+          {!isVoting && (
+            <button
+              onClick={onCancelConfirm}
+              className="bg-ink/10 text-ink px-2 py-1.5 hover:bg-ink/20 transition-colors"
+              aria-label="Cancel"
+            >
+              <X size={12} />
+            </button>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={onConfirm}
+          disabled={votedForSomeone || votingInFlight || isClosed}
+          className="bg-coral text-sand px-3 py-1.5 text-xs font-medium hover:bg-ink transition-colors disabled:opacity-40 disabled:hover:bg-coral flex items-center gap-1"
+        >
+          <Flame size={12} />
+          Vote
+        </button>
       )}
     </div>
   );

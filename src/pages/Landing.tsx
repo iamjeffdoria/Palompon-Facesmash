@@ -44,6 +44,7 @@ export default function Landing() {
       });
     } catch (err) {
       console.error(err);
+      setToast({ message: "Vote didn't go through. Try again.", type: "info" });
     } finally {
       setVotingFor(null);
     }
@@ -170,6 +171,7 @@ export default function Landing() {
           setShowSignIn(true);
         }}
         onPendingSmashResolved={() => setPendingSmash(null)}
+        onVoteError={() => setToast({ message: "That didn't go through. Try again.", type: "info" })}
       />
 
       {!user && <MarketingSections />}

@@ -64,10 +64,10 @@ export default function SiteHeader({
           )}
         </nav>
 
-        <div className="md:hidden flex items-center gap-1">
+        <div className="md:hidden flex items-center gap-0.5">
           {!loading && user && (
             <>
-              <span className="relative shrink-0">
+              <span className="relative shrink-0 p-2 flex items-center justify-center">
                 {user.photoURL ? (
                   <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
@@ -75,7 +75,7 @@ export default function SiteHeader({
                     {user.displayName?.[0] ?? "U"}
                   </span>
                 )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-teal border-2 border-sand" />
+                <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-teal border-2 border-sand" />
               </span>
               <NotificationBell uid={user.uid} />
             </>

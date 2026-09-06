@@ -37,9 +37,9 @@ export default function Toast({
         visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
       }`}
     >
-      <div className="flex items-center gap-2.5 bg-ink text-sand pl-4 pr-3 py-3 shadow-lg max-w-[90vw]">
-        <Icon size={18} className="text-teal shrink-0" />
-        <span className="text-sm font-medium truncate">{toast.message}</span>
+      <div className="flex items-start gap-2.5 bg-ink text-sand pl-4 pr-3 py-3 shadow-lg max-w-[90vw]">
+        <Icon size={18} className="text-teal shrink-0 mt-0.5" />
+        <span className="text-sm font-medium">{toast.message}</span>
         <button
           onClick={() => setVisible(false)}
           aria-label="Dismiss"

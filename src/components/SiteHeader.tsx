@@ -64,18 +64,21 @@ export default function SiteHeader({
           )}
         </nav>
 
-        <div className="md:hidden flex items-center gap-2">
+        <div className="md:hidden flex items-center gap-1">
           {!loading && user && (
-            <span className="relative shrink-0">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
-              ) : (
-                <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium">
-                  {user.displayName?.[0] ?? "U"}
-                </span>
-              )}
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-teal border-2 border-sand" />
-            </span>
+            <>
+              <span className="relative shrink-0">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium">
+                    {user.displayName?.[0] ?? "U"}
+                  </span>
+                )}
+                <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-teal border-2 border-sand" />
+              </span>
+              <NotificationBell uid={user.uid} />
+            </>
           )}
           <button
             onClick={onToggleMobileMenu}
@@ -122,29 +125,30 @@ export default function SiteHeader({
                 </div>
                 <p className="text-xs text-ink/50 truncate">{user.email}</p>
               </div>
-              <button
-                onClick={() => {
-                  onToggleMobileMenu();
-                  onLogOut();
-                }}
-                className="text-xs text-coral hover:text-ink transition-colors shrink-0"
-              >
-                Sign out
-              </button>
             </div>
           )}
 
-          <div className="px-4 sm:px-6 py-4 flex flex-col gap-4">
+          <div className="px-4 sm:px-6 py-4 flex flex-col gap-3">
             {!loading && user && (
-              <div className="flex items-center justify-between gap-3">
-                <FeaturedProfileModal />
-                <NotificationBell uid={user.uid} />
-              </div>
+              <>
+                <div className="[&>button]:w-full [&>button]:justify-center">
+                  <FeaturedProfileModal />
+                </div>
+                <button
+                  onClick={() => {
+                    onToggleMobileMenu();
+                    onLogOut();
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 bg-coral text-sand px-3 py-1.5 hover:bg-ink transition-colors"
+                >
+                  Sign out
+                </button>
+              </>
             )}
 
             {!loading && !user && (
               <>
-                <div className="flex items-center justify-between">
+                <div className="[&>button]:w-full [&>button]:justify-center">
                   <FeaturedProfileModal />
                 </div>
                 <a href="#how" onClick={onToggleMobileMenu} className="hover:text-coral transition-colors">

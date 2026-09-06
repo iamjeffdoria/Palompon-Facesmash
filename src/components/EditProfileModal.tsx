@@ -81,7 +81,7 @@ export default function EditProfileModal({
             <span className="absolute bottom-0 right-0 bg-coral text-sand rounded-full p-1.5 border-2 border-sand">
               <Camera size={12} />
             </span>
-            <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+            <input type="file" className="hidden" onChange={handlePhotoChange} />
           </label>
         </div>
         <p className="text-xs text-ink/50 mb-4 text-center sm:text-left">

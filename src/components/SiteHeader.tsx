@@ -64,17 +64,31 @@ export default function SiteHeader({
           )}
         </nav>
 
-        <button
-          onClick={onToggleMobileMenu}
-          aria-label="Toggle menu"
-          className="md:hidden p-2"
-        >
-          {mobileMenuOpen ? (
-            <ChevronUp size={22} strokeWidth={2} />
-          ) : (
-            <ChevronDown size={22} strokeWidth={2} />
+        <div className="md:hidden flex items-center gap-2">
+          {!loading && user && (
+            <span className="relative shrink-0">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+              ) : (
+                <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium">
+                  {user.displayName?.[0] ?? "U"}
+                </span>
+              )}
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-teal border-2 border-sand" />
+            </span>
           )}
-        </button>
+          <button
+            onClick={onToggleMobileMenu}
+            aria-label="Toggle menu"
+            className="p-2"
+          >
+            {mobileMenuOpen ? (
+              <ChevronUp size={22} strokeWidth={2} />
+            ) : (
+              <ChevronDown size={22} strokeWidth={2} />
+            )}
+          </button>
+        </div>
       </div>
 
       {!user && (

@@ -142,16 +142,16 @@ export default function UploadPhotoModal({
             </button>
           </>
         ) : (
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             {/* Photo picker — matches the 3:4 crop aspect so preview shows the real result */}
-            <label className="shrink-0 cursor-pointer">
-              <div className="w-32 h-[170px] border border-dashed border-ink/25 flex items-center justify-center overflow-hidden">
+            <label className="shrink-0 cursor-pointer mx-auto sm:mx-0 w-40 sm:w-32">
+              <div className="w-40 h-[200px] sm:w-32 sm:h-[170px] border border-dashed border-ink/25 flex items-center justify-center overflow-hidden">
                 {finalPreview ? (
                   <img src={finalPreview} alt="" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="flex flex-col items-center gap-1 text-ink/40 px-2 text-center">
-                    <Camera size={24} strokeWidth={1.5} />
-                    <span className="text-[10px] leading-tight">Choose photo</span>
+                  <div className="flex flex-col items-center gap-1.5 text-ink/40 px-2 text-center">
+                    <Camera size={26} strokeWidth={1.5} />
+                    <span className="text-xs leading-tight">Choose photo</span>
                   </div>
                 )}
               </div>
@@ -162,47 +162,53 @@ export default function UploadPhotoModal({
               />
             </label>
 
-            {/* Right column: options */}
-            <div className="flex-1 min-w-0 flex flex-col gap-2.5">
+            {/* Options */}
+            <div className="flex-1 min-w-0 flex flex-col gap-3">
               {rawPreview && (
                 <button
                   onClick={() => setCropping(true)}
-                  className="text-xs text-coral hover:text-ink transition-colors text-left"
+                  className="text-xs text-coral hover:text-ink transition-colors text-center sm:text-left -mt-1 sm:mt-0"
                 >
                   Adjust crop
                 </button>
               )}
 
-              <select
-                value={barangay}
-                onChange={(e) => {
-                  setBarangay(e.target.value);
-                  localStorage.setItem("lastBarangay", e.target.value);
-                }}
-                className="w-full border border-ink/20 bg-sand px-2.5 py-2 text-sm focus:outline-none focus:border-coral transition-colors"
-              >
-                <option value="">Select your barangay</option>
-                {PALOMPON_BARANGAYS.map((b) => (
-                  <option key={b} value={b}>{b}</option>
-                ))}
-              </select>
+              <div className="min-w-0">
+                <label className="block text-xs text-ink/50 mb-1">Barangay</label>
+                <select
+                  value={barangay}
+                  onChange={(e) => {
+                    setBarangay(e.target.value);
+                    localStorage.setItem("lastBarangay", e.target.value);
+                  }}
+                  className="w-full max-w-full border border-ink/20 bg-sand px-2.5 py-2.5 text-sm truncate focus:outline-none focus:border-coral transition-colors"
+                >
+                  <option value="">Select your barangay</option>
+                  {PALOMPON_BARANGAYS.map((b) => (
+                    <option key={b} value={b}>{b}</option>
+                  ))}
+                </select>
+              </div>
 
-              <div className="grid grid-cols-3 gap-1.5">
-                {destinations.map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setDestination(value)}
-                    className={`flex flex-col items-center gap-1 py-2 px-1 text-[10px] font-medium border transition-colors ${
-                      destination === value
-                        ? "border-coral bg-coral/10 text-coral"
-                        : "border-ink/15 text-ink/50 hover:border-ink/30"
-                    }`}
-                  >
-                    <Icon size={14} />
-                    <span className="leading-tight text-center">{label}</span>
-                  </button>
-                ))}
+              <div>
+                <label className="block text-xs text-ink/50 mb-1">Post to</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {destinations.map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setDestination(value)}
+                      className={`flex flex-col items-center gap-1.5 py-3 px-1 text-[11px] font-medium border transition-colors ${
+                        destination === value
+                          ? "border-coral bg-coral/10 text-coral"
+                          : "border-ink/15 text-ink/50 hover:border-ink/30"
+                      }`}
+                    >
+                      <Icon size={18} />
+                      <span className="leading-tight text-center truncate w-full">{label}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

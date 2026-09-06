@@ -5,9 +5,14 @@ import { db } from "../lib/firebase";
 export interface UserProfile {
   firstName: string;
   lastName: string;
+  photoURL?: string;
 }
 
-export function useProfile(uid: string | undefined, fallbackName: string | null) {
+export function useProfile(
+  uid: string | undefined,
+  fallbackName: string | null,
+  fallbackPhotoURL: string | null = null
+) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -21,7 +26,11 @@ export function useProfile(uid: string | undefined, fallbackName: string | null)
     const unsub = onSnapshot(ref, (snap) => {
       const data = snap.data();
       if (data?.firstName) {
-        setProfile({ firstName: data.firstName, lastName: data.lastName ?? "" });
+        setProfile({
+          firstName: data.firstName,
+          lastName: data.lastName ?? "",
+          photoURL: data.photoURL ?? undefined,
+        });
       } else {
         setProfile(null);
       }
@@ -30,14 +39,18 @@ export function useProfile(uid: string | undefined, fallbackName: string | null)
     return () => unsub();
   }, [uid]);
 
-  async function updateName(firstName: string, lastName: string) {
+  async function updateProfile(firstName: string, lastName: string, photoURL?: string) {
     if (!uid) return;
-    await setDoc(doc(db, "users", uid), { firstName, lastName }, { merge: true });
+    const payload: Record<string, string> = { firstName, lastName };
+    if (photoURL) payload.photoURL = photoURL;
+    await setDoc(doc(db, "users", uid), payload, { merge: true });
   }
 
   const displayName = profile
     ? `${profile.firstName} ${profile.lastName}`.trim()
     : fallbackName ?? "Someone";
 
-  return { profile, displayName, loading, updateName };
+  const displayPhotoURL = profile?.photoURL || fallbackPhotoURL;
+
+  return { profile, displayName, displayPhotoURL, loading, updateName: updateProfile };
 }

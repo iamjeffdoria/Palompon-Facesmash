@@ -7,6 +7,7 @@ import NotificationBell from "./NotificationBell";
 export default function SiteHeader({
   user,
   displayName,
+  photoURL,
   loading,
   streak,
   mobileMenuOpen,
@@ -18,6 +19,7 @@ export default function SiteHeader({
 }: {
   user: User | null;
   displayName: string;
+  photoURL: string | null;
   loading: boolean;
   streak: number | null;
   mobileMenuOpen: boolean;
@@ -57,6 +59,7 @@ export default function SiteHeader({
                   <AccountMenu
                     user={user}
                     displayName={displayName}
+                    photoURL={photoURL}
                     streak={streak}
                     onSignOut={onLogOut}
                     onEditProfile={onEditProfile}
@@ -78,8 +81,8 @@ export default function SiteHeader({
           {!loading && user && (
             <>
               <span className="relative shrink-0 p-2 flex items-center justify-center">
-                {user.photoURL ? (
-                  <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
+                {photoURL ? (
+                  <img src={photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                   <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium">
                     {displayName?.[0] ?? "U"}
@@ -116,8 +119,8 @@ export default function SiteHeader({
         <div className="md:hidden border-t border-ink/15 text-sm">
           {!loading && user && (
             <div className="flex items-center gap-3 px-4 sm:px-6 py-4 border-b border-ink/10 bg-ink/[0.02]">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-11 h-11 rounded-full shrink-0" />
+              {photoURL ? (
+                <img src={photoURL} alt="" className="w-11 h-11 rounded-full shrink-0 object-cover" />
               ) : (
                 <span className="w-11 h-11 rounded-full bg-teal text-sand flex items-center justify-center text-sm font-medium shrink-0">
                   {displayName?.[0] ?? "U"}

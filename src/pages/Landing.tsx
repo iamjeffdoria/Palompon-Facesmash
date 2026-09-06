@@ -37,7 +37,11 @@ export default function Landing() {
   const { matches } = useActiveMatches();
   const { notifications } = useNotifications(user?.uid);
   const streak = useStreak(user?.uid);
-  const { profile, displayName, updateName } = useProfile(user?.uid, user?.displayName ?? null);
+  const { profile, displayName, displayPhotoURL, updateName } = useProfile(
+    user?.uid,
+    user?.displayName ?? null,
+    user?.photoURL ?? null
+  );
   const lastSeenNotifAt = useRef<number | null>(null);
 
   // Pop a toast the instant a new vote/smash notification arrives, even if
@@ -79,7 +83,7 @@ export default function Landing() {
     try {
       await castVote(matchId, user.uid, sideUid, {
         name: displayName,
-        photoURL: user.photoURL,
+        photoURL: displayPhotoURL,
       });
     } catch (err) {
       console.error(err);
@@ -167,6 +171,7 @@ export default function Landing() {
       <SiteHeader
         user={user}
         displayName={displayName}
+        photoURL={displayPhotoURL}
         loading={loading}
         streak={streak}
         mobileMenuOpen={mobileMenuOpen}
@@ -219,7 +224,7 @@ export default function Landing() {
       <SmashOrPassDeck
         myUid={user?.uid}
         myName={user ? displayName : null}
-        myPhotoURL={user?.photoURL ?? null}
+        myPhotoURL={user ? displayPhotoURL : null}
         pendingSmash={pendingSmash}
         onRequireSignIn={(photoId, choice) => {
           setPendingSmash({ photoId, choice });
@@ -245,10 +250,11 @@ export default function Landing() {
         <EditProfileModal
           initialFirstName={profile?.firstName ?? user.displayName?.split(" ")[0] ?? ""}
           initialLastName={profile?.lastName ?? user.displayName?.split(" ").slice(1).join(" ") ?? ""}
+          initialPhotoURL={displayPhotoURL}
           onClose={() => setShowEditProfile(false)}
-          onSave={async (firstName, lastName) => {
-            await updateName(firstName, lastName);
-            setToast({ message: "Name updated!", type: "success" });
+          onSave={async (firstName, lastName, photoURL) => {
+            await updateName(firstName, lastName, photoURL);
+            setToast({ message: "Profile updated!", type: "success" });
           }}
         />
       )}

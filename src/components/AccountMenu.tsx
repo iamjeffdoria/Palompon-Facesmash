@@ -5,12 +5,14 @@ import type { User } from "firebase/auth";
 export default function AccountMenu({
   user,
   displayName,
+  photoURL,
   streak,
   onSignOut,
   onEditProfile,
 }: {
   user: User;
   displayName: string;
+  photoURL: string | null;
   streak: number | null;
   onSignOut: () => void;
   onEditProfile: () => void;
@@ -22,8 +24,8 @@ export default function AccountMenu({
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 text-sm hover:text-coral transition-colors"
       >
-        {user.photoURL ? (
-          <img src={user.photoURL} alt="" className="w-7 h-7 rounded-full" />
+        {photoURL ? (
+          <img src={photoURL} alt="" className="w-7 h-7 rounded-full object-cover" />
         ) : (
           <span className="w-7 h-7 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium">
             {displayName?.[0] ?? "U"}

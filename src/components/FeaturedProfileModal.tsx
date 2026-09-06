@@ -10,9 +10,9 @@ export default function FeaturedProfileModal() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 text-xs font-medium border border-mango text-mango px-3 py-1.5 hover:bg-mango hover:text-ink transition-colors"
+        className="flex items-center gap-1.5 border border-mango text-mango px-3 py-1.5 hover:bg-mango hover:text-ink transition-colors"
       >
-        <Sparkles size={14} />
+        <Sparkles size={15} />
         Spotlight
       </button>
 

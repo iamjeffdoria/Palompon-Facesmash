@@ -6,6 +6,7 @@ import NotificationBell from "./NotificationBell";
 
 export default function SiteHeader({
   user,
+  displayName,
   loading,
   streak,
   mobileMenuOpen,
@@ -13,8 +14,10 @@ export default function SiteHeader({
   onShowSignIn,
   onShowUpload,
   onLogOut,
+  onEditProfile,
 }: {
   user: User | null;
+  displayName: string;
   loading: boolean;
   streak: number | null;
   mobileMenuOpen: boolean;
@@ -22,6 +25,7 @@ export default function SiteHeader({
   onShowSignIn: () => void;
   onShowUpload: () => void;
   onLogOut: () => void;
+  onEditProfile: () => void;
 }) {
   return (
     <header className="sticky top-0 z-40 bg-sand border-b border-ink/15">
@@ -50,7 +54,13 @@ export default function SiteHeader({
                     Post photo
                   </button>
                   <NotificationBell uid={user.uid} />
-                  <AccountMenu user={user} streak={streak} onSignOut={onLogOut} />
+                  <AccountMenu
+                    user={user}
+                    displayName={displayName}
+                    streak={streak}
+                    onSignOut={onLogOut}
+                    onEditProfile={onEditProfile}
+                  />
                 </>
               ) : (
                 <button
@@ -72,7 +82,7 @@ export default function SiteHeader({
                   <img src={user.photoURL} alt="" className="w-8 h-8 rounded-full object-cover" />
                 ) : (
                   <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium">
-                    {user.displayName?.[0] ?? "U"}
+                    {displayName?.[0] ?? "U"}
                   </span>
                 )}
                 <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-teal border-2 border-sand" />
@@ -110,12 +120,12 @@ export default function SiteHeader({
                 <img src={user.photoURL} alt="" className="w-11 h-11 rounded-full shrink-0" />
               ) : (
                 <span className="w-11 h-11 rounded-full bg-teal text-sand flex items-center justify-center text-sm font-medium shrink-0">
-                  {user.displayName?.[0] ?? "U"}
+                  {displayName?.[0] ?? "U"}
                 </span>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">{user.displayName}</p>
+                  <p className="font-medium truncate">{displayName}</p>
                   {streak !== null && streak > 0 && (
                     <span className="flex items-center gap-0.5 text-xs font-medium text-coral shrink-0">
                       <Flame size={12} />
@@ -134,6 +144,15 @@ export default function SiteHeader({
                 <div className="[&>button]:w-full [&>button]:justify-center">
                   <FeaturedProfileModal />
                 </div>
+                <button
+                  onClick={() => {
+                    onToggleMobileMenu();
+                    onEditProfile();
+                  }}
+                  className="w-full flex items-center justify-center gap-1.5 border border-ink/20 text-ink px-3 py-1.5 hover:border-ink transition-colors"
+                >
+                  Edit name
+                </button>
                 <button
                   onClick={() => {
                     onToggleMobileMenu();

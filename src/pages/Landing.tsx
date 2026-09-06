@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import { doc, getDoc } from "firebase/firestore";
 import { useActiveMatches } from "../hooks/useActiveMatches";
 import { useNotifications } from "../hooks/useNotifications";
 import { useStreak } from "../hooks/useStreak";
+import { useProfile } from "../hooks/useProfile";
 import { castVote } from "../lib/vote";
 import { useAuth } from "../hooks/useAuth";
-import { auth } from "../lib/firebase";
+import { auth, db } from "../lib/firebase";
 import SiteHeader from "../components/SiteHeader";
 import MatchupBoard from "../components/MatchupBoard";
 import LeaderboardCard from "../components/LeaderboardCard";
@@ -14,12 +16,14 @@ import SignInModal from "../components/SignInModal";
 import UploadPhotoModal from "../components/UploadPhotoModal";
 import MatchFoundModal from "../components/MatchFoundModal";
 import SmashOrPassDeck from "../components/SmashOrPassDeck";
+import EditProfileModal from "../components/EditProfileModal";
 import Toast, { type ToastData } from "../components/Toast";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
 
 export default function Landing() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   const [matchPhotoId, setMatchPhotoId] = useState<string | null>(null);
   const [matchLocalPreview, setMatchLocalPreview] = useState<string | null>(null);
   const [pendingVote, setPendingVote] = useState<{ matchId: string; sideUid: string } | null>(null);
@@ -33,6 +37,7 @@ export default function Landing() {
   const { matches } = useActiveMatches();
   const { notifications } = useNotifications(user?.uid);
   const streak = useStreak(user?.uid);
+  const { profile, displayName, updateName } = useProfile(user?.uid, user?.displayName ?? null);
   const lastSeenNotifAt = useRef<number | null>(null);
 
   // Pop a toast the instant a new vote/smash notification arrives, even if
@@ -73,7 +78,7 @@ export default function Landing() {
     setVotingFor(`${matchId}:${sideUid}`);
     try {
       await castVote(matchId, user.uid, sideUid, {
-        name: user.displayName ?? "Someone",
+        name: displayName,
         photoURL: user.photoURL,
       });
     } catch (err) {
@@ -115,6 +120,19 @@ export default function Landing() {
       setPendingUpload(false);
       setShowUploadModal(true);
     }
+
+    // First-ever sign-in (or anyone who's never set a custom name): prompt
+    // them to confirm/edit their name before it gets baked into votes and
+    // photos. We check the just-fetched profile doc directly rather than
+    // the `profile` state variable, since the onSnapshot listener may not
+    // have delivered yet at this point.
+    if (freshUid) {
+      const snap = await getDoc(doc(db, "users", freshUid));
+      const hasCustomName = snap.exists() && !!snap.data()?.firstName;
+      if (!hasCustomName) {
+        setShowEditProfile(true);
+      }
+    }
   }
 
   function handleLogOut() {
@@ -133,7 +151,7 @@ export default function Landing() {
     }
     const { photoId } = await uploadPhotoAndQueue(
       file,
-      { uid: user.uid, displayName: user.displayName },
+      { uid: user.uid, displayName },
       destination,
       barangay
     );
@@ -148,6 +166,7 @@ export default function Landing() {
     <div className="min-h-screen w-full max-w-[100vw] bg-sand text-ink font-body">
       <SiteHeader
         user={user}
+        displayName={displayName}
         loading={loading}
         streak={streak}
         mobileMenuOpen={mobileMenuOpen}
@@ -155,6 +174,7 @@ export default function Landing() {
         onShowSignIn={() => setShowSignIn(true)}
         onShowUpload={() => setShowUploadModal(true)}
         onLogOut={handleLogOut}
+        onEditProfile={() => setShowEditProfile(true)}
       />
 
       {showBanner && !loading && !user && (
@@ -198,7 +218,7 @@ export default function Landing() {
 
       <SmashOrPassDeck
         myUid={user?.uid}
-        myName={user?.displayName ?? null}
+        myName={user ? displayName : null}
         myPhotoURL={user?.photoURL ?? null}
         pendingSmash={pendingSmash}
         onRequireSignIn={(photoId, choice) => {
@@ -219,6 +239,18 @@ export default function Landing() {
 
       {showUploadModal && (
         <UploadPhotoModal onClose={() => setShowUploadModal(false)} onUpload={handlePhotoUpload} />
+      )}
+
+      {showEditProfile && user && (
+        <EditProfileModal
+          initialFirstName={profile?.firstName ?? user.displayName?.split(" ")[0] ?? ""}
+          initialLastName={profile?.lastName ?? user.displayName?.split(" ").slice(1).join(" ") ?? ""}
+          onClose={() => setShowEditProfile(false)}
+          onSave={async (firstName, lastName) => {
+            await updateName(firstName, lastName);
+            setToast({ message: "Name updated!", type: "success" });
+          }}
+        />
       )}
 
       {matchPhotoId && matchLocalPreview && user && (

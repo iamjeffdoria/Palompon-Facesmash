@@ -1,3 +1,5 @@
+import { useLiveStats } from "../hooks/useLiveStats";
+
 const steps = [
   { n: "1", title: "Post your photo", body: "Light filters are fine, just don't edit yourself into an unrecognizable stranger." },
   { n: "2", title: "Get matched, or swipe", body: "Go head-to-head in a VS matchup, or drop into the Smash or Pass deck — your call." },
@@ -5,6 +7,14 @@ const steps = [
 ];
 
 export default function MarketingSections() {
+  const { votesToday, barangaysRepping, facesInRunning } = useLiveStats();
+
+  const stats = [
+    { value: votesToday.toLocaleString(), label: "votes cast today" },
+    { value: barangaysRepping.toLocaleString(), label: "barangays repping" },
+    { value: facesInRunning.toLocaleString(), label: "faces in the running" },
+  ];
+
   return (
     <>
       <section id="how" className="border-y border-ink/15 bg-ink text-sand">
@@ -20,11 +30,7 @@ export default function MarketingSections() {
       </section>
 
       <section className="grid grid-cols-3 divide-x divide-ink/15 border-b border-ink/15">
-        {[
-          { value: "4,120", label: "votes cast today" },
-          { value: "38", label: "barangays repping" },
-          { value: "612", label: "faces in the running" },
-        ].map((s) => (
+        {stats.map((s) => (
           <div key={s.label} className="text-center py-6 sm:py-10 px-2 sm:px-4">
             <p className="font-display text-2xl sm:text-3xl md:text-4xl text-coral">{s.value}</p>
             <p className="mt-1 text-xs sm:text-sm text-ink/60">{s.label}</p>

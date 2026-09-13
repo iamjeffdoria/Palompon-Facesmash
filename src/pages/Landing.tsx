@@ -26,6 +26,12 @@ import { useHasPosted } from "../hooks/useHasPosted";
 import { captureReferralFromUrl, getPendingReferrer, clearPendingReferrer, recordReferral } from "../lib/referral";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
 
+interface StoredUserDoc {
+  firstName?: string;
+  lastName?: string;
+  photoURL?: string;
+}
+
 export default function Landing() {
   type SignInReason = "vote" | "smash" | "chat" | "upload";
   const [showSignIn, setShowSignIn] = useState(false);
@@ -140,7 +146,10 @@ export default function Landing() {
     if (freshUid) {
       profileSnap = await getDoc(doc(db, "users", freshUid));
     }
-    const customFirstName = profileSnap?.exists() ? (profileSnap.data()?.firstName as string | undefined) : undefined;
+    const userDoc: StoredUserDoc | undefined = profileSnap?.exists()
+      ? (profileSnap.data() as StoredUserDoc)
+      : undefined;
+    const customFirstName = userDoc?.firstName;
     const welcomeName = customFirstName || auth.currentUser?.displayName?.split(" ")[0];
     setToast({ message: `Welcome${welcomeName ? `, ${welcomeName}` : ""}!`, type: "success" });
     if (freshUid) {
@@ -151,8 +160,8 @@ export default function Landing() {
       clearPendingReferrer();
     }
     if (pendingVote && freshUid) {
-      const customLastName = profileSnap?.exists() ? (profileSnap.data()?.lastName as string | undefined) : undefined;
-      const customPhotoURL = profileSnap?.exists() ? (profileSnap.data()?.photoURL as string | undefined) : undefined;
+      const customLastName = userDoc?.lastName;
+      const customPhotoURL = userDoc?.photoURL;
       const voteName = customFirstName
         ? `${customFirstName} ${customLastName ?? ""}`.trim()
         : auth.currentUser?.displayName ?? "Someone";

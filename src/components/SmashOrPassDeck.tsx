@@ -75,7 +75,7 @@ export default function SmashOrPassDeck({
   }, [myUid, pendingSmash, loading, deck]);
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-8 border-t border-ink/15">
+    <div className="min-w-0">
       <div className="flex items-center gap-2 mb-4">
         <Flame size={16} className="text-coral" />
         <span className="text-xs tracking-wide text-coral font-medium">Smash or Pass</span>
@@ -160,6 +160,6 @@ export default function SmashOrPassDeck({
           {filteredDeck.length} photo{filteredDeck.length > 1 ? "s" : ""}{searchQuery ? " found" : ""} — swipe or tap the arrows
         </p>
       )}
-    </section>
+    </div>
   );
 }

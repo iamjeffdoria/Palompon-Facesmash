@@ -16,6 +16,7 @@ import SignInModal from "../components/SignInModal";
 import UploadPhotoModal from "../components/UploadPhotoModal";
 import MatchFoundModal from "../components/MatchFoundModal";
 import SmashOrPassDeck from "../components/SmashOrPassDeck";
+import LiveChatPanel from "../components/LiveChatPanel";
 import EditProfileModal from "../components/EditProfileModal";
 import Toast, { type ToastData } from "../components/Toast";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
@@ -221,19 +222,26 @@ export default function Landing() {
         <LeaderboardCard />
       </section>
 
-      <SmashOrPassDeck
-        myUid={user?.uid}
-        myName={user ? displayName : null}
-        myPhotoURL={user ? displayPhotoURL : null}
-        pendingSmash={pendingSmash}
-        onRequireSignIn={(photoId, choice) => {
-          setPendingSmash({ photoId, choice });
-          setShowSignIn(true);
-        }}
-        onPendingSmashResolved={() => setPendingSmash(null)}
-        onVoteError={() => setToast({ message: "That didn't go through. Try again.", type: "info" })}
-      />
-
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-8 border-t border-ink/15 grid md:grid-cols-2 gap-8 md:gap-10 items-start">
+        <SmashOrPassDeck
+          myUid={user?.uid}
+          myName={user ? displayName : null}
+          myPhotoURL={user ? displayPhotoURL : null}
+          pendingSmash={pendingSmash}
+          onRequireSignIn={(photoId, choice) => {
+            setPendingSmash({ photoId, choice });
+            setShowSignIn(true);
+          }}
+          onPendingSmashResolved={() => setPendingSmash(null)}
+          onVoteError={() => setToast({ message: "That didn't go through. Try again.", type: "info" })}
+        />
+        <LiveChatPanel
+          myUid={user?.uid}
+          myName={user ? displayName : null}
+          myPhotoURL={user ? displayPhotoURL : null}
+          onRequireSignIn={() => setShowSignIn(true)}
+        />
+      </section>
       {!user && <MarketingSections />}
 
       <footer className="border-t border-ink/15 text-center text-sm text-ink/50 py-8 px-4">

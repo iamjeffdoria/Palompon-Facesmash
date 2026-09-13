@@ -101,7 +101,7 @@ export default function MatchCard({
             side={{
               ...p,
               name: profiles[p.uid]?.name || p.name,
-              photoURL: profiles[p.uid]?.photoURL || p.photoURL,
+              photoURL: p.photoURL,
             }}
             matchId={match.id}
             voteCount={match.votes?.[p.uid] ?? 0}

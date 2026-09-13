@@ -22,7 +22,7 @@ export default function SmashOrPassCard({
   const [pendingChoice, setPendingChoice] = useState<"smash" | "pass" | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const displayName = profile?.name || photo.name;
-  const displayPhotoURL = profile?.photoURL || photo.photoURL;
+  const displayPhotoURL = photo.photoURL;
   function handleVote(choice: "smash" | "pass") {
     setPendingChoice(choice);
     onVote(photo.id, choice);

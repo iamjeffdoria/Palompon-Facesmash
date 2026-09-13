@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, MoreVertical, Trash2 } from "lucide-react";
+import { MessageCircle, Send } from "lucide-react";
 import { useLiveChat } from "../hooks/useLiveChat";
 import { sendChatMessage, deleteChatMessage } from "../lib/chat";
-import { timeAgo } from "../lib/timeAgo";
+import ChatMessageRow from "./ChatMessageRow";
 export default function LiveChatPanel({
   myUid,
   myName,
@@ -18,7 +18,8 @@ export default function LiveChatPanel({
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const lastSentAtRef = useRef(0);
+  const SEND_COOLDOWN_MS = 1500;
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = scrollRef.current;
@@ -31,6 +32,9 @@ export default function LiveChatPanel({
     }
     const text = draft.trim();
     if (!text || sending) return;
+    const now = Date.now();
+    if (now - lastSentAtRef.current < SEND_COOLDOWN_MS) return;
+    lastSentAtRef.current = now;
     setSending(true);
     setDraft("");
     try {
@@ -49,7 +53,6 @@ export default function LiveChatPanel({
   }
   async function handleDelete(messageId: string) {
     if (deletingId) return;
-    setOpenMenuId(null);
     setDeletingId(messageId);
     try {
       await deleteChatMessage(messageId);
@@ -77,54 +80,13 @@ export default function LiveChatPanel({
             <p className="text-center text-sm text-ink/40 py-10">No messages yet — say hi!</p>
           ) : (
             messages.map((m) => (
-              <div key={m.id} className="flex items-start gap-2.5 group">
-                {m.photoURL ? (
-                  <img src={m.photoURL} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
-                ) : (
-                  <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium shrink-0">
-                    {m.name?.[0] ?? "?"}
-                  </span>
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2">
-                    <p className="text-xs font-medium truncate">{m.name}</p>
-                    <p className="text-[10px] text-ink/40 shrink-0">{timeAgo(m.createdAt)}</p>
-                    {myUid === m.uid && (
-                      <div className="relative ml-auto shrink-0">
-                        <button
-                          onClick={() => setOpenMenuId(openMenuId === m.id ? null : m.id)}
-                          aria-label="Message options"
-                          className={`text-ink/40 hover:text-ink transition-colors p-1 -m-1 [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:opacity-100 ${
-                            openMenuId === m.id ? "[@media(hover:hover)]:opacity-100" : ""
-                          }`}
-                        >
-                          <MoreVertical size={14} />
-                        </button>
-                        {openMenuId === m.id && (
-                          <>
-                            <div className="fixed inset-0 z-10" onClick={() => setOpenMenuId(null)} />
-                            <div className="absolute right-0 top-full mt-1 bg-sand border border-ink/15 shadow-lg z-20 whitespace-nowrap">
-                              <button
-                                onClick={() => handleDelete(m.id)}
-                                disabled={deletingId === m.id}
-                                className="flex items-center gap-2 px-3 py-2 text-xs text-coral hover:bg-coral/10 transition-colors disabled:opacity-40 w-full text-left"
-                              >
-                                {deletingId === m.id ? (
-                                  <span className="w-3 h-3 border-2 border-coral/30 border-t-coral rounded-full animate-spin shrink-0" />
-                                ) : (
-                                  <Trash2 size={13} className="shrink-0" />
-                                )}
-                                Delete
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm text-ink/80 break-words">{m.text}</p>
-                </div>
-              </div>
+              <ChatMessageRow
+                key={m.id}
+                message={m}
+                isOwn={myUid === m.uid}
+                onDelete={handleDelete}
+                deleting={deletingId === m.id}
+              />
             ))
           )}
         </div>

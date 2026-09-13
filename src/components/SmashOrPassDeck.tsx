@@ -3,6 +3,7 @@ import { Flame, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useSmashDeck } from "../hooks/useSmashDeck";
 import { castSmashVote } from "../lib/smashOrPass";
 import SmashOrPassCard from "./SmashOrPassCard";
+import { useUserProfiles } from "../hooks/useUserProfiles";
 
 export default function SmashOrPassDeck({
   myUid,
@@ -33,6 +34,8 @@ export default function SmashOrPassDeck({
       (p) => p.name.toLowerCase().includes(q) || p.barangay.toLowerCase().includes(q)
     );
   }, [deck, searchQuery]);
+  const deckUids = useMemo(() => deck.map((p) => p.uid), [deck]);
+  const profiles = useUserProfiles(deckUids);
 
   function scrollDeck(direction: "left" | "right") {
     const el = scrollRef.current;
@@ -121,6 +124,7 @@ export default function SmashOrPassDeck({
                 onVote={handleVote}
                 voting={votingId === photo.id}
                 isOwn={photo.uid === myUid}
+                profile={profiles[photo.uid]}
               />
             ))}
           </div>

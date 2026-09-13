@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Flame, Check, X, Expand, Clock } from "lucide-react";
 import { useVoterRecord } from "../hooks/useVoterRecord";
 import type { MatchData } from "../hooks/useLatestMatch";
+import type { LiveProfile } from "../hooks/useUserProfiles";
 import PhotoViewerModal from "./PhotoViewerModal";
 
 function formatTimeLeft(ms: number): string {
@@ -34,11 +35,13 @@ export default function MatchCard({
   myUid,
   onVote,
   votingFor,
+  profiles,
 }: {
   match: MatchData;
   myUid: string | undefined;
   onVote: (matchId: string, sideUid: string) => void;
   votingFor: string | null;
+  profiles: Record<string, LiveProfile>;
 }) {
   const votedFor = useVoterRecord(match.id, myUid);
   const [confirmingUid, setConfirmingUid] = useState<string | null>(null);
@@ -95,7 +98,11 @@ export default function MatchCard({
         {orderedSides.map((p) => (
           <MatchSide
             key={p.uid}
-            side={p}
+            side={{
+              ...p,
+              name: profiles[p.uid]?.name || p.name,
+              photoURL: profiles[p.uid]?.photoURL || p.photoURL,
+            }}
             matchId={match.id}
             voteCount={match.votes?.[p.uid] ?? 0}
             isVoted={votedFor === p.uid}

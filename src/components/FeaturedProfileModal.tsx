@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles, X, UserPlus, Crown } from "lucide-react";
 import { useFeaturedAndNewest } from "../hooks/useFeaturedAndNewest";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useUserProfiles } from "../hooks/useUserProfiles";
 export default function FeaturedProfileModal() {
   const [open, setOpen] = useState(false);
   const { featured, newest, loading } = useFeaturedAndNewest();
+  const spotlightUids = useMemo(
+    () => [...(featured ? [featured.uid] : []), ...newest.map((p) => p.uid)],
+    [featured, newest]
+  );
+  const profiles = useUserProfiles(spotlightUids);
   useLockBodyScroll(open);
 
   return (
@@ -49,12 +55,12 @@ export default function FeaturedProfileModal() {
                   </div>
                   <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-4 sm:p-6 text-center sm:text-left">
                     <img
-                      src={featured.photoURL}
-                      alt={featured.name}
+                      src={profiles[featured.uid]?.photoURL || featured.photoURL}
+                      alt={profiles[featured.uid]?.name || featured.name}
                       className="w-24 h-32 sm:w-28 sm:h-36 object-cover border-2 border-mango shrink-0"
                     />
                     <div className="min-w-0 w-full">
-                      <p className="font-display text-xl sm:text-2xl leading-tight truncate">{featured.name}</p>
+                      <p className="font-display text-xl sm:text-2xl leading-tight truncate">{profiles[featured.uid]?.name || featured.name}</p>
                       <p className="text-sm text-ink/60 mt-1 truncate">{featured.barangay}</p>
                       <p className="text-sm text-teal font-semibold mt-3 bg-teal/10 inline-block px-2.5 py-1">
                         {featured.totalVotes} total votes
@@ -84,11 +90,11 @@ export default function FeaturedProfileModal() {
                       className="bg-teal/10 border border-teal/30 p-3 flex flex-col items-center text-center hover:bg-teal/20 transition-colors"
                     >
                       <img
-                        src={p.photoURL}
-                        alt={p.name}
+                        src={profiles[p.uid]?.photoURL || p.photoURL}
+                        alt={profiles[p.uid]?.name || p.name}
                         className="w-16 h-20 object-cover mb-2 border border-teal/30"
                       />
-                      <p className="text-sm font-medium leading-tight truncate w-full">{p.name}</p>
+                      <p className="text-sm font-medium leading-tight truncate w-full">{profiles[p.uid]?.name || p.name}</p>
                       <p className="text-xs text-ink/50 truncate w-full">{p.barangay}</p>
                     </div>
                   ))}

@@ -19,6 +19,7 @@ import SmashOrPassDeck from "../components/SmashOrPassDeck";
 import LiveChatPanel from "../components/LiveChatPanel";
 import EditProfileModal from "../components/EditProfileModal";
 import Toast, { type ToastData } from "../components/Toast";
+import StreakCelebrationModal from "../components/StreakCelebrationModal";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
 
 export default function Landing() {
@@ -61,7 +62,7 @@ export default function Landing() {
   const { user, loading, signInWithGoogle, logOut } = useAuth();
   const { matches } = useActiveMatches();
   const { notifications } = useNotifications(user?.uid);
-  const streak = useStreak(user?.uid);
+  const { streak, event: streakEvent, clearEvent: clearStreakEvent } = useStreak(user?.uid);
   const { profile, displayName, displayPhotoURL, updateName } = useProfile(
     user?.uid,
     user?.displayName ?? null,
@@ -321,6 +322,9 @@ export default function Landing() {
       )}
 
       <Toast toast={toast} onClose={() => setToast(null)} />
+      {streakEvent && user && (
+        <StreakCelebrationModal event={streakEvent} onClose={clearStreakEvent} />
+      )}
     </div>
   );
 }

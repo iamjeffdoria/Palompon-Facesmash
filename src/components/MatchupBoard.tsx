@@ -2,6 +2,7 @@ import { useRef, useMemo, useState } from "react";
 import { Camera, ChevronLeft, ChevronRight, Search, Swords, X } from "lucide-react";
 import MatchCard from "./MatchCard";
 import type { MatchData } from "../hooks/useLatestMatch";
+import { useUserProfiles } from "../hooks/useUserProfiles";
 
 export default function MatchupBoard({
   matches,
@@ -30,6 +31,8 @@ export default function MatchupBoard({
       )
     );
   }, [matches, searchQuery]);
+  const matchUids = useMemo(() => matches.flatMap((m) => Object.keys(m.sides)), [matches]);
+  const profiles = useUserProfiles(matchUids);
 
   function scrollMatches(direction: "left" | "right") {
     const el = scrollRef.current;
@@ -89,7 +92,7 @@ export default function MatchupBoard({
             style={{ WebkitOverflowScrolling: "touch", overscrollBehaviorX: "contain" }}
           >
             {filteredMatches.map((m) => (
-              <MatchCard key={m.id} match={m} myUid={myUid} onVote={onVote} votingFor={votingFor} />
+              <MatchCard key={m.id} match={m} myUid={myUid} onVote={onVote} votingFor={votingFor} profiles={profiles} />
             ))}
           </div>
 

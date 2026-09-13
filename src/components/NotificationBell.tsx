@@ -3,38 +3,41 @@ import { Bell, Flame, Heart, X } from "lucide-react";
 import { useNotifications, type AppNotification } from "../hooks/useNotifications";
 import { markAllNotificationsRead, markNotificationRead } from "../lib/notifications";
 import { timeAgo } from "../lib/timeAgo";
+import { useUserProfiles, type LiveProfile } from "../hooks/useUserProfiles";
 
 interface GroupedNotification {
   key: string;
   type: "vote" | "smash";
   contextId: string;
-  actorNames: string[];
+  actors: { uid: string; name: string }[];
+  latestActorUid: string;
   latestActorPhotoURL: string | null;
   read: boolean;
   createdAt: number;
   ids: string[];
 }
-
-function formatActors(names: string[]): string {
-  const unique = [...new Set(names)];
-  if (unique.length === 1) return unique[0];
-  if (unique.length === 2) return `${unique[0]} and ${unique[1]}`;
-  return `${unique[0]} and ${unique.length - 1} others`;
+function formatActors(
+  actors: { uid: string; name: string }[],
+  profiles: Record<string, LiveProfile>
+): string {
+  const unique = [...new Map(actors.map((a) => [a.uid, a])).values()];
+  const names = unique.map((a) => profiles[a.uid]?.name || a.name);
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names[0]} and ${names.length - 1} others`;
 }
-
 function groupNotifications(notifications: AppNotification[]): GroupedNotification[] {
   const groups = new Map<string, GroupedNotification>();
-
-  // notifications arrive newest-first, so the first actor seen per group is the latest
   for (const n of notifications) {
     const key = `${n.type}:${n.contextId}`;
     const existing = groups.get(key);
     if (existing) {
-      existing.actorNames.push(n.actorName);
+      existing.actors.push({ uid: n.actorUid, name: n.actorName });
       existing.ids.push(n.id);
       existing.read = existing.read && n.read;
       if (n.createdAt > existing.createdAt) {
         existing.createdAt = n.createdAt;
+        existing.latestActorUid = n.actorUid;
         existing.latestActorPhotoURL = n.actorPhotoURL;
       }
     } else {
@@ -42,7 +45,8 @@ function groupNotifications(notifications: AppNotification[]): GroupedNotificati
         key,
         type: n.type,
         contextId: n.contextId,
-        actorNames: [n.actorName],
+        actors: [{ uid: n.actorUid, name: n.actorName }],
+        latestActorUid: n.actorUid,
         latestActorPhotoURL: n.actorPhotoURL,
         read: n.read,
         createdAt: n.createdAt,
@@ -50,13 +54,14 @@ function groupNotifications(notifications: AppNotification[]): GroupedNotificati
       });
     }
   }
-
   return [...groups.values()].sort((a, b) => b.createdAt - a.createdAt);
 }
 
 export default function NotificationBell({ uid }: { uid: string | undefined }) {
   const [open, setOpen] = useState(false);
   const { notifications, unreadCount } = useNotifications(uid);
+  const actorUids = useMemo(() => notifications.map((n) => n.actorUid), [notifications]);
+  const profiles = useUserProfiles(actorUids);
   const grouped = useMemo(() => groupNotifications(notifications), [notifications]);
 
   function handleToggle() {
@@ -118,7 +123,8 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
               ) : (
                 grouped.map((g) => {
                   const isSmash = g.type === "smash";
-                  const actorLabel = formatActors(g.actorNames);
+                  const actorLabel = formatActors(g.actors, profiles);
+                  const latestPhoto = profiles[g.latestActorUid]?.photoURL ?? g.latestActorPhotoURL;
                   return (
                     <button
                       key={g.key}
@@ -132,11 +138,11 @@ export default function NotificationBell({ uid }: { uid: string | undefined }) {
                       }`}
                     >
                       <span className="relative shrink-0">
-                        {g.latestActorPhotoURL ? (
-                          <img src={g.latestActorPhotoURL} alt="" className="w-10 h-10 rounded-full object-cover" />
+                        {latestPhoto ? (
+                          <img src={latestPhoto} alt="" className="w-10 h-10 rounded-full object-cover" />
                         ) : (
                           <span className="w-10 h-10 rounded-full bg-teal text-sand flex items-center justify-center text-sm font-medium">
-                            {g.actorNames[0]?.[0] ?? "?"}
+                            {actorLabel?.[0] ?? "?"}
                           </span>
                         )}
                         <span

@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Trophy, MapPin } from "lucide-react";
 import { Flame } from "lucide-react";
 import { useBarangayStandings } from "../hooks/useBarangayStandings";
 import { useIndividualStandings } from "../hooks/useIndividualStandings";
 import { useMostSmashed } from "../hooks/useMostSmashed";
+import { useUserProfiles } from "../hooks/useUserProfiles";
 
 function medalFor(rank: number) {
   if (rank === 1) return { bg: "bg-[#FFD700]/15", ring: "border-[#FFD700]", text: "text-[#B8860B]", label: "🥇" };
@@ -17,6 +18,11 @@ export default function LeaderboardCard() {
   const { standings: individualStandings } = useIndividualStandings();
   const { standings: smashStandings } = useMostSmashed();
   const [tab, setTab] = useState<"individual" | "barangay" | "smash">("individual");
+  const standingUids = useMemo(
+    () => [...individualStandings.map((p) => p.uid), ...smashStandings.map((s) => s.uid)],
+    [individualStandings, smashStandings]
+  );
+  const profiles = useUserProfiles(standingUids);
 
   return (
     <div id="board" className="border border-ink/15 bg-sand w-full max-w-full min-w-0 flex flex-col md:mt-[31px]">
@@ -79,7 +85,7 @@ export default function LeaderboardCard() {
                     <span className="font-display text-2xl text-ink/30 w-9 text-center shrink-0">{rank}</span>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className={`font-medium leading-tight truncate ${medal ? medal.text : ""}`}>{p.name}</p>
+                    <p className={`font-medium leading-tight truncate ${medal ? medal.text : ""}`}>{profiles[p.uid]?.name || p.name}</p>
                     <p className="text-xs text-ink/50 truncate">{p.barangay}</p>
                   </div>
                   <span className="text-sm text-teal font-medium shrink-0 whitespace-nowrap">{p.totalVotes} votes</span>
@@ -141,7 +147,7 @@ export default function LeaderboardCard() {
                   <span className="font-display text-2xl text-ink/30 w-9 text-center shrink-0">{rank}</span>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className={`font-medium leading-tight truncate ${medal ? medal.text : ""}`}>{s.name}</p>
+                  <p className={`font-medium leading-tight truncate ${medal ? medal.text : ""}`}>{profiles[s.uid]?.name || s.name}</p>
                   <p className="text-xs text-ink/50 truncate">{s.barangay}</p>
                 </div>
                 <span className="text-sm text-coral font-medium shrink-0 whitespace-nowrap flex items-center gap-1">

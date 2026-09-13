@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageCircle, Send, X } from "lucide-react";
 import { useLiveChat } from "../hooks/useLiveChat";
 import { sendChatMessage, deleteChatMessage } from "../lib/chat";
 import ChatMessageRow from "./ChatMessageRow";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useUserProfiles } from "../hooks/useUserProfiles";
 
 export default function LiveChatPanel({
   myUid,
@@ -17,6 +18,8 @@ export default function LiveChatPanel({
   onRequireSignIn: () => void;
 }) {
   const { messages, loading } = useLiveChat();
+  const messageUids = useMemo(() => messages.map((m) => m.uid), [messages]);
+  const profiles = useUserProfiles(messageUids);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -93,6 +96,7 @@ export default function LiveChatPanel({
               isOwn={myUid === m.uid}
               onDelete={handleDelete}
               deleting={deletingId === m.id}
+              profile={profiles[m.uid]}
             />
           ))
         )}

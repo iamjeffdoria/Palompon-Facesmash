@@ -1,27 +1,31 @@
 import { memo, useState } from "react";
 import { MoreVertical, Trash2 } from "lucide-react";
 import type { ChatMessage } from "../hooks/useLiveChat";
+import type { LiveProfile } from "../hooks/useUserProfiles";
 import { timeAgo } from "../lib/timeAgo";
 interface Props {
   message: ChatMessage;
   isOwn: boolean;
   onDelete: (id: string) => void;
   deleting: boolean;
+  profile?: LiveProfile;
 }
-function ChatMessageRow({ message: m, isOwn, onDelete, deleting }: Props) {
+function ChatMessageRow({ message: m, isOwn, onDelete, deleting, profile }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const displayName = profile?.name || m.name;
+  const displayPhotoURL = profile?.photoURL ?? m.photoURL;
   return (
     <div className="flex items-start gap-2.5 group">
-      {m.photoURL ? (
-        <img src={m.photoURL} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+      {displayPhotoURL ? (
+        <img src={displayPhotoURL} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
       ) : (
         <span className="w-8 h-8 rounded-full bg-teal text-sand flex items-center justify-center text-xs font-medium shrink-0">
-          {m.name?.[0] ?? "?"}
+          {displayName?.[0] ?? "?"}
         </span>
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <p className="text-xs font-medium truncate">{m.name}</p>
+          <p className="text-xs font-medium truncate">{displayName}</p>
           <p className="text-[10px] text-ink/40 shrink-0">{timeAgo(m.createdAt)}</p>
           {isOwn && (
             <div className="relative ml-auto shrink-0">

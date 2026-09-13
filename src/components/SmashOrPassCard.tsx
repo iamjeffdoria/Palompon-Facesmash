@@ -1,19 +1,24 @@
 import { useState } from "react";
 import { Flame, X } from "lucide-react";
 import type { SmashPhoto } from "../hooks/useSmashDeck";
+import type { LiveProfile } from "../hooks/useUserProfiles";
 
 export default function SmashOrPassCard({
   photo,
   onVote,
   voting,
   isOwn,
+  profile,
 }: {
   photo: SmashPhoto;
   onVote: (photoId: string, choice: "smash" | "pass") => void;
   voting: boolean;
   isOwn: boolean;
+  profile?: LiveProfile;
 }) {
   const [pendingChoice, setPendingChoice] = useState<"smash" | "pass" | null>(null);
+  const displayName = profile?.name || photo.name;
+  const displayPhotoURL = profile?.photoURL || photo.photoURL;
 
   function handleVote(choice: "smash" | "pass") {
     setPendingChoice(choice);
@@ -23,11 +28,11 @@ export default function SmashOrPassCard({
   return (
     <div className="border-2 border-ink/70 bg-sand shrink-0 w-[45vw] max-w-[140px] sm:w-[140px] snap-start overflow-hidden">
       <div className="relative aspect-[3/4] bg-ink/5">
-        <img src={photo.photoURL} alt={photo.name} className="w-full h-full object-cover" />
+        <img src={displayPhotoURL} alt={displayName} className="w-full h-full object-cover" />
       </div>
-
+      
       <div className="px-2 py-2 text-center">
-        <p className="font-medium text-xs truncate">{photo.name}</p>
+        <p className="font-medium text-xs truncate">{displayName}</p>
         <p className="text-[10px] text-ink/50 truncate">{photo.barangay}</p>
       </div>
 

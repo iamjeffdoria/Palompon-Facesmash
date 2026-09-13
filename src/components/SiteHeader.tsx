@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Camera, Flame } from "lucide-react";
+import { ChevronDown, ChevronUp, Camera, Flame, Pencil, LogOut } from "lucide-react";
 import type { User } from "firebase/auth";
 import AccountMenu from "./AccountMenu";
 import FeaturedProfileModal from "./FeaturedProfileModal";
@@ -142,10 +142,10 @@ export default function SiteHeader({
             </div>
           )}
 
-          <div className="px-4 sm:px-6 py-4 flex flex-col gap-3">
+          <div className="text-sm">
             {!loading && user && (
-              <>
-                <div className="[&>button]:w-full [&>button]:justify-center">
+              <div className="pb-2">
+                <div className="px-4 sm:px-6 py-3 [&>button]:w-full [&>button]:justify-center">
                   <FeaturedProfileModal />
                 </div>
                 <button
@@ -153,25 +153,29 @@ export default function SiteHeader({
                     onToggleMobileMenu();
                     onEditProfile();
                   }}
-                  className="w-full flex items-center justify-center gap-1.5 border border-ink/20 text-ink px-3 py-1.5 hover:border-ink transition-colors"
+                  className="w-full flex items-center gap-2.5 text-left px-4 sm:px-6 py-3 hover:bg-ink/5 transition-colors"
                 >
+                  <Pencil size={15} className="text-ink/50" />
                   Edit profile
                 </button>
-                {user && <InviteButton uid={user.uid} variant="pill" onShared={onToggleMobileMenu} />}
-                <button
-                  onClick={() => {
-                    onToggleMobileMenu();
-                    onLogOut();
-                  }}
-                  className="w-full flex items-center justify-center gap-1.5 bg-coral text-sand px-3 py-1.5 hover:bg-ink transition-colors"
-                >
-                  Sign out
-                </button>
-              </>
+                {user && <InviteButton uid={user.uid} onShared={onToggleMobileMenu} />}
+                <div className="border-t border-ink/10 mt-1 pt-1">
+                  <button
+                    onClick={() => {
+                      onToggleMobileMenu();
+                      onLogOut();
+                    }}
+                    className="w-full flex items-center gap-2.5 text-left px-4 sm:px-6 py-3 text-coral hover:bg-coral/10 transition-colors"
+                  >
+                    <LogOut size={15} />
+                    Sign out
+                  </button>
+                </div>
+              </div>
             )}
 
             {!loading && !user && (
-              <>
+              <div className="px-4 sm:px-6 py-4 flex flex-col gap-3">
                 <div className="[&>button]:w-full [&>button]:justify-center">
                   <FeaturedProfileModal />
                 </div>
@@ -190,7 +194,7 @@ export default function SiteHeader({
                 >
                   Sign in
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>

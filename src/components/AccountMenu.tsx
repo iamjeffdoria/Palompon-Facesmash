@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Flame, Pencil } from "lucide-react";
+import { Flame, LogOut, Pencil } from "lucide-react";
 import type { User } from "firebase/auth";
 import InviteButton from "./InviteButton";
 
@@ -73,8 +73,9 @@ export default function AccountMenu({
                 setOpen(false);
                 onSignOut();
               }}
-              className="w-full text-left px-4 py-2 text-sm hover:bg-ink/5 transition-colors"
+              className="w-full flex items-center gap-2 text-left px-4 py-2 text-sm hover:bg-ink/5 transition-colors"
             >
+              <LogOut size={14} />
               Sign out
             </button>
           </div>

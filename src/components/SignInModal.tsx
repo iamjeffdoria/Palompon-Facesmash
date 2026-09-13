@@ -1,11 +1,16 @@
 import { useState } from "react";
-
 export default function SignInModal({
   onClose,
   onSignIn,
+  eyebrow = "One account, one you",
+  title = "Sign in to continue",
+  description = "We use Google sign-in to keep things fair — one account per person, no bots, no duplicates.",
 }: {
   onClose: () => void;
   onSignIn: () => void;
+  eyebrow?: string;
+  title?: string;
+  description?: string;
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -45,11 +50,9 @@ export default function SignInModal({
         className="bg-sand max-w-sm w-full p-8 border border-ink/15"
         onClick={(e) => e.stopPropagation()}
       >
-        <p className="text-xs text-ink/50 mb-2">One vote per person</p>
-        <h3 className="font-display text-2xl mb-3">Sign in to vote</h3>
-        <p className="text-sm text-ink/70 mb-6">
-          We use Google sign-in to keep voting fair, one account, one vote per matchup.
-        </p>
+        <p className="text-xs text-ink/50 mb-2">{eyebrow}</p>
+        <h3 className="font-display text-2xl mb-3">{title}</h3>
+        <p className="text-sm text-ink/70 mb-6">{description}</p>
         <button
           onClick={handleClick}
           disabled={loading}

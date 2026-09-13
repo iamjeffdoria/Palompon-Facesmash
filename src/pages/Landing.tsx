@@ -22,7 +22,31 @@ import Toast, { type ToastData } from "../components/Toast";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
 
 export default function Landing() {
+  type SignInReason = "vote" | "smash" | "chat" | "upload";
   const [showSignIn, setShowSignIn] = useState(false);
+  const [signInReason, setSignInReason] = useState<SignInReason>("vote");
+  const signInCopy: Record<SignInReason, { eyebrow: string; title: string; description: string }> = {
+    vote: {
+      eyebrow: "One vote per person",
+      title: "Sign in to vote",
+      description: "We use Google sign-in to keep voting fair, one account, one vote per matchup.",
+    },
+    smash: {
+      eyebrow: "One swipe per person",
+      title: "Sign in to smash or pass",
+      description: "We use Google sign-in to keep swiping fair, one account, one verdict per photo.",
+    },
+    chat: {
+      eyebrow: "Real people, real names",
+      title: "Sign in to join the chat",
+      description: "We use Google sign-in so Town Chat stays a real conversation, not a spam bot free-for-all.",
+    },
+    upload: {
+      eyebrow: "One photo, one you",
+      title: "Sign in to post your photo",
+      description: "We use Google sign-in to keep entries fair, one account, one photo in the running.",
+    },
+  };
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const [matchPhotoId, setMatchPhotoId] = useState<string | null>(null);
@@ -77,6 +101,7 @@ export default function Landing() {
   async function handleVoteClick(matchId: string, sideUid: string) {
     if (!user) {
       setPendingVote({ matchId, sideUid });
+      setSignInReason("vote");
       setShowSignIn(true);
       return;
     }
@@ -99,6 +124,7 @@ export default function Landing() {
       setShowUploadModal(true);
     } else {
       setPendingUpload(true);
+      setSignInReason("upload");
       setShowSignIn(true);
     }
   }
@@ -177,7 +203,10 @@ export default function Landing() {
         streak={streak}
         mobileMenuOpen={mobileMenuOpen}
         onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)}
-        onShowSignIn={() => setShowSignIn(true)}
+        onShowSignIn={() => {
+          setSignInReason("vote");
+          setShowSignIn(true);
+        }}
         onShowUpload={() => setShowUploadModal(true)}
         onLogOut={handleLogOut}
         onEditProfile={() => setShowEditProfile(true)}
@@ -230,6 +259,7 @@ export default function Landing() {
           pendingSmash={pendingSmash}
           onRequireSignIn={(photoId, choice) => {
             setPendingSmash({ photoId, choice });
+            setSignInReason("smash");
             setShowSignIn(true);
           }}
           onPendingSmashResolved={() => setPendingSmash(null)}
@@ -239,7 +269,10 @@ export default function Landing() {
           myUid={user?.uid}
           myName={user ? displayName : null}
           myPhotoURL={user ? displayPhotoURL : null}
-          onRequireSignIn={() => setShowSignIn(true)}
+          onRequireSignIn={() => {
+            setSignInReason("chat");
+            setShowSignIn(true);
+          }}
         />
       </section>
       {!user && <MarketingSections />}
@@ -248,7 +281,15 @@ export default function Landing() {
         PalomponFacesmash — made for the town, by the town.
       </footer>
 
-      {showSignIn && <SignInModal onClose={() => setShowSignIn(false)} onSignIn={handleSignIn} />}
+      {showSignIn && (
+        <SignInModal
+          onClose={() => setShowSignIn(false)}
+          onSignIn={handleSignIn}
+          eyebrow={signInCopy[signInReason].eyebrow}
+          title={signInCopy[signInReason].title}
+          description={signInCopy[signInReason].description}
+        />
+      )}
 
       {showUploadModal && (
         <UploadPhotoModal onClose={() => setShowUploadModal(false)} onUpload={handlePhotoUpload} />

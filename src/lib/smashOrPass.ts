@@ -1,4 +1,4 @@
-import { doc, increment, runTransaction } from "firebase/firestore";
+import { deleteDoc, doc, increment, runTransaction } from "firebase/firestore";
 import { db } from "./firebase";
 import { createNotification } from "./notifications";
 
@@ -47,4 +47,7 @@ export async function castSmashVote(
       contextId: photoId,
     }).catch(console.error);
   }
+}
+export async function deleteSmashPhoto(photoId: string) {
+  await deleteDoc(doc(db, "smashOrPass", photoId));
 }

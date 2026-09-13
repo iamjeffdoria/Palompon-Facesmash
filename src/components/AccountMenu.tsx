@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Flame, Pencil } from "lucide-react";
 import type { User } from "firebase/auth";
+import InviteButton from "./InviteButton";
 
 export default function AccountMenu({
   user,
@@ -66,6 +67,7 @@ export default function AccountMenu({
               <Pencil size={14} />
               Edit profile
             </button>
+            <InviteButton uid={user.uid} onShared={() => setOpen(false)} />
             <button
               onClick={() => {
                 setOpen(false);

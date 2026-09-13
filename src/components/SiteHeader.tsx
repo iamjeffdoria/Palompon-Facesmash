@@ -3,6 +3,7 @@ import type { User } from "firebase/auth";
 import AccountMenu from "./AccountMenu";
 import FeaturedProfileModal from "./FeaturedProfileModal";
 import NotificationBell from "./NotificationBell";
+import InviteButton from "./InviteButton";
 
 export default function SiteHeader({
   user,
@@ -156,6 +157,7 @@ export default function SiteHeader({
                 >
                   Edit profile
                 </button>
+                {user && <InviteButton uid={user.uid} variant="pill" onShared={onToggleMobileMenu} />}
                 <button
                   onClick={() => {
                     onToggleMobileMenu();

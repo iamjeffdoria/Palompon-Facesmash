@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import type { Area } from "react-easy-crop";
-import { Camera, Flame, Swords, Layers } from "lucide-react";
+import { Camera, Flame, Swords, Layers, Info } from "lucide-react";
 import { getCroppedImg } from "../lib/cropImage";
 import { PALOMPON_BARANGAYS } from "../lib/barangays";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
@@ -30,7 +30,7 @@ export default function UploadPhotoModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   useLockBodyScroll();
-  
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
@@ -211,6 +211,25 @@ export default function UploadPhotoModal({
                     </button>
                   ))}
                 </div>
+                {(destination === "smash" || destination === "both") && (
+                  <div className="flex items-start gap-1.5 mt-2.5 text-[11px] text-ink/50 leading-snug">
+                    <Info size={12} className="shrink-0 mt-0.5" />
+                    <p>
+                      <span className="text-teal font-medium">Smash or Pass</span> entries can be deleted anytime.{" "}
+                      {destination === "both" && (
+                        <>Your <span className="text-coral font-medium">Match Card</span> can't — an opponent is counting on it.</>
+                      )}
+                    </p>
+                  </div>
+                )}
+                {destination === "match" && (
+                  <div className="flex items-start gap-1.5 mt-2.5 text-[11px] text-ink/50 leading-snug">
+                    <Info size={12} className="shrink-0 mt-0.5" />
+                    <p>
+                      <span className="text-coral font-medium">Match Card</span> posts can't be deleted once matched — an opponent is counting on it.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

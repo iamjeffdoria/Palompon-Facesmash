@@ -1,25 +1,28 @@
 import { useState } from "react";
-import { Flame, X } from "lucide-react";
+import { Flame, Trash2, X } from "lucide-react";
 import type { SmashPhoto } from "../hooks/useSmashDeck";
 import type { LiveProfile } from "../hooks/useUserProfiles";
-
 export default function SmashOrPassCard({
   photo,
   onVote,
   voting,
   isOwn,
   profile,
+  onDelete,
+  deleting,
 }: {
   photo: SmashPhoto;
   onVote: (photoId: string, choice: "smash" | "pass") => void;
   voting: boolean;
   isOwn: boolean;
   profile?: LiveProfile;
+  onDelete?: (photoId: string) => void;
+  deleting?: boolean;
 }) {
   const [pendingChoice, setPendingChoice] = useState<"smash" | "pass" | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const displayName = profile?.name || photo.name;
   const displayPhotoURL = profile?.photoURL || photo.photoURL;
-
   function handleVote(choice: "smash" | "pass") {
     setPendingChoice(choice);
     onVote(photo.id, choice);
@@ -30,14 +33,49 @@ export default function SmashOrPassCard({
       <div className="relative aspect-[3/4] bg-ink/5">
         <img src={displayPhotoURL} alt={displayName} className="w-full h-full object-cover" />
       </div>
-      
+
       <div className="px-2 py-2 text-center">
         <p className="font-medium text-xs truncate">{displayName}</p>
         <p className="text-[10px] text-ink/50 truncate">{photo.barangay}</p>
       </div>
 
       {isOwn ? (
-        <p className="text-center text-[10px] text-ink/40 pb-2">Your photo</p>
+        confirmingDelete ? (
+          <div className="flex items-center justify-center gap-1.5 pb-2">
+            <button
+              onClick={() => onDelete?.(photo.id)}
+              disabled={deleting}
+              className="flex items-center gap-1 bg-coral text-sand px-2.5 py-1.5 text-[11px] font-medium hover:bg-ink transition-colors disabled:opacity-40"
+            >
+              {deleting ? (
+                <span className="w-3 h-3 border-2 border-sand/40 border-t-sand rounded-full animate-spin" />
+              ) : (
+                <Trash2 size={11} />
+              )}
+              Sure?
+            </button>
+            {!deleting && (
+              <button
+                onClick={() => setConfirmingDelete(false)}
+                className="bg-ink/10 text-ink px-2 py-1.5 hover:bg-ink/20 transition-colors"
+                aria-label="Cancel delete"
+              >
+                <X size={11} />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-2 pb-2">
+            <span className="text-[10px] text-ink/40">Your photo</span>
+            <button
+              onClick={() => setConfirmingDelete(true)}
+              aria-label="Delete photo"
+              className="text-ink/30 hover:text-coral transition-colors p-0.5 -m-0.5"
+            >
+              <Trash2 size={12} />
+            </button>
+          </div>
+        )
       ) : photo.myChoice ? (
         <div className="flex items-center justify-center pb-2">
           <span

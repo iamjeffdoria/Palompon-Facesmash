@@ -1,7 +1,7 @@
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Flame, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useSmashDeck } from "../hooks/useSmashDeck";
-import { castSmashVote } from "../lib/smashOrPass";
+import { castSmashVote, deleteSmashPhoto } from "../lib/smashOrPass";
 import SmashOrPassCard from "./SmashOrPassCard";
 import { useUserProfiles } from "../hooks/useUserProfiles";
 
@@ -24,6 +24,7 @@ export default function SmashOrPassDeck({
 }) {
   const { deck, loading } = useSmashDeck(myUid);
   const [votingId, setVotingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -65,9 +66,18 @@ export default function SmashOrPassDeck({
       setVotingId(null);
     }
   }
-
-  // Resume a smash/pass that was queued while signed out, as soon as the
-  // person finishes signing in and this deck has the photo loaded.
+  async function handleDelete(photoId: string) {
+    if (deletingId) return;
+    setDeletingId(photoId);
+    try {
+      await deleteSmashPhoto(photoId);
+    } catch (err) {
+      console.error(err);
+      onVoteError();
+    } finally {
+      setDeletingId(null);
+    }
+  }
   useEffect(() => {
     if (!myUid || !pendingSmash || loading) return;
     const photo = deck.find((p) => p.id === pendingSmash.photoId);
@@ -125,6 +135,8 @@ export default function SmashOrPassDeck({
                 voting={votingId === photo.id}
                 isOwn={photo.uid === myUid}
                 profile={profiles[photo.uid]}
+                onDelete={handleDelete}
+                deleting={deletingId === photo.id}
               />
             ))}
           </div>

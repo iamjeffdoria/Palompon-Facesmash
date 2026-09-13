@@ -20,6 +20,10 @@ import LiveChatPanel from "../components/LiveChatPanel";
 import EditProfileModal from "../components/EditProfileModal";
 import Toast, { type ToastData } from "../components/Toast";
 import StreakCelebrationModal from "../components/StreakCelebrationModal";
+import BarangayRivalry from "../components/BarangayRivalry";
+import FirstPostNudge from "../components/FirstPostNudge";
+import { useHasPosted } from "../hooks/useHasPosted";
+import { captureReferralFromUrl, getPendingReferrer, clearPendingReferrer, recordReferral } from "../lib/referral";
 import { uploadPhotoAndQueue } from "../lib/uploadPhoto";
 
 export default function Landing() {
@@ -68,12 +72,11 @@ export default function Landing() {
     user?.displayName ?? null,
     user?.photoURL ?? null
   );
+  const { hasPosted, loading: hasPostedLoading } = useHasPosted(user?.uid);
   const lastSeenNotifAt = useRef<number | null>(null);
-
-  // Pop a toast the instant a new vote/smash notification arrives, even if
-  // the bell panel is closed. On first load (or right after sign-in), we
-  // just record the most recent timestamp without toasting — otherwise
-  // every notification you already had would toast all at once.
+  useEffect(() => {
+    captureReferralFromUrl();
+  }, []);
   useEffect(() => {
     if (!user) {
       lastSeenNotifAt.current = null;
@@ -133,34 +136,38 @@ export default function Landing() {
   async function handleSignIn() {
     await signInWithGoogle();
     const freshUid = auth.currentUser?.uid;
-    const freshName = auth.currentUser?.displayName?.split(" ")[0];
-    setToast({ message: `Welcome${freshName ? `, ${freshName}` : ""}!`, type: "success" });
-
+    let profileSnap: Awaited<ReturnType<typeof getDoc>> | null = null;
+    if (freshUid) {
+      profileSnap = await getDoc(doc(db, "users", freshUid));
+    }
+    const customFirstName = profileSnap?.exists() ? (profileSnap.data()?.firstName as string | undefined) : undefined;
+    const welcomeName = customFirstName || auth.currentUser?.displayName?.split(" ")[0];
+    setToast({ message: `Welcome${welcomeName ? `, ${welcomeName}` : ""}!`, type: "success" });
+    if (freshUid) {
+      const pendingReferrer = getPendingReferrer();
+      if (pendingReferrer && pendingReferrer !== freshUid) {
+        recordReferral(freshUid, pendingReferrer).catch(() => {});
+      }
+      clearPendingReferrer();
+    }
     if (pendingVote && freshUid) {
+      const customLastName = profileSnap?.exists() ? (profileSnap.data()?.lastName as string | undefined) : undefined;
+      const customPhotoURL = profileSnap?.exists() ? (profileSnap.data()?.photoURL as string | undefined) : undefined;
+      const voteName = customFirstName
+        ? `${customFirstName} ${customLastName ?? ""}`.trim()
+        : auth.currentUser?.displayName ?? "Someone";
       castVote(pendingVote.matchId, freshUid, pendingVote.sideUid, {
-        name: auth.currentUser?.displayName ?? "Someone",
-        photoURL: auth.currentUser?.photoURL ?? null,
+        name: voteName,
+        photoURL: customPhotoURL || auth.currentUser?.photoURL || null,
       }).catch(console.error);
       setPendingVote(null);
     }
-
-    // pendingSmash is intentionally NOT resolved here — SmashOrPassDeck
-    // resumes it itself once myUid becomes truthy, since it already has
-    // the deck data (photo owner's uid) needed to complete the smash.
-
     if (pendingUpload) {
       setPendingUpload(false);
       setShowUploadModal(true);
     }
-
-    // First-ever sign-in (or anyone who's never set a custom name): prompt
-    // them to confirm/edit their name before it gets baked into votes and
-    // photos. We check the just-fetched profile doc directly rather than
-    // the `profile` state variable, since the onSnapshot listener may not
-    // have delivered yet at this point.
     if (freshUid) {
-      const snap = await getDoc(doc(db, "users", freshUid));
-      const hasCustomName = snap.exists() && !!snap.data()?.firstName;
+      const hasCustomName = !!customFirstName;
       if (!hasCustomName) {
         setShowEditProfile(true);
       }
@@ -239,6 +246,10 @@ export default function Landing() {
           </button>
         </section>
       )}
+      {user && !loading && !hasPostedLoading && !hasPosted && (
+        <FirstPostNudge onPost={() => setShowUploadModal(true)} />
+      )}
+      <BarangayRivalry onJoinClick={handleJoinClick} />
 
       <section className="max-w-6xl mx-auto px-4 sm:px-6 md:px-10 py-6 md:py-8 grid md:grid-cols-2 gap-8 md:gap-10 items-start">
         <MatchupBoard

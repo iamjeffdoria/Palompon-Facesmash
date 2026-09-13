@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, ChevronDown } from "lucide-react";
 import { useLiveChat } from "../hooks/useLiveChat";
 import { sendChatMessage, deleteChatMessage } from "../lib/chat";
 import ChatMessageRow from "./ChatMessageRow";
@@ -18,6 +18,7 @@ export default function LiveChatPanel({
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const lastSentAtRef = useRef(0);
   const SEND_COOLDOWN_MS = 1500;
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,15 +65,27 @@ export default function LiveChatPanel({
   }
   return (
     <div className="min-w-0">
-      <div className="flex items-center gap-2 mb-4">
-        <MessageCircle size={16} className="text-coral" />
+      <button
+        type="button"
+        onClick={() => setMobileOpen((v) => !v)}
+        className="flex items-center gap-2 mb-4 w-full md:pointer-events-none md:cursor-default"
+      >
+        <MessageCircle size={16} className="text-coral shrink-0" />
         <span className="text-xs tracking-wide text-coral font-medium">Town Chat</span>
         <span className="hidden sm:flex items-center gap-1.5 text-xs text-ink/40 ml-2">
           <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
           live
         </span>
-      </div>
-      <div className="border border-ink/15 bg-sand flex flex-col h-80 sm:h-96 max-h-[65vh] sm:max-h-[60vh]">
+        <ChevronDown
+          size={16}
+          className={`ml-auto text-ink/40 transition-transform md:hidden ${mobileOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+      <div
+        className={`border border-ink/15 bg-sand flex-col h-80 sm:h-96 max-h-[65vh] sm:max-h-[60vh] ${
+          mobileOpen ? "flex" : "hidden"
+        } md:flex`}
+      >
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 flex flex-col gap-3">
           {loading ? (
             <p className="text-center text-sm text-ink/40 py-10">Loading chat...</p>

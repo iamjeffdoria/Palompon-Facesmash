@@ -104,14 +104,23 @@ export default function LiveChatPanel({
         <input
           type="text"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            if (!myUid) return;
+            setDraft(e.target.value);
+          }}
           onKeyDown={handleKeyDown}
           onFocus={() => {
             if (!myUid) onRequireSignIn();
           }}
+          onClick={() => {
+            if (!myUid) onRequireSignIn();
+          }}
+          readOnly={!myUid}
           placeholder={myUid ? "Say something to the town..." : "Sign in to join the chat"}
           maxLength={300}
-          className="flex-1 min-w-0 border border-ink/20 bg-sand px-3 py-2 text-sm placeholder:text-ink/40 focus:outline-none focus:border-coral transition-colors"
+          className={`flex-1 min-w-0 border border-ink/20 bg-sand px-3 py-2 text-sm placeholder:text-ink/40 focus:outline-none focus:border-coral transition-colors ${
+            !myUid ? "cursor-pointer" : ""
+          }`}
         />
         <button
           onClick={handleSend}

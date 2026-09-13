@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 export default function SignInModal({
   onClose,
   onSignIn,
@@ -14,7 +15,8 @@ export default function SignInModal({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  useLockBodyScroll();
+  
   async function handleClick() {
     setLoading(true);
     setError("");

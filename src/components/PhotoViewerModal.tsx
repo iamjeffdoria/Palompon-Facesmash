@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 export default function PhotoViewerModal({
   photoURL,
   name,
@@ -11,6 +11,7 @@ export default function PhotoViewerModal({
   barangay: string;
   onClose: () => void;
 }) {
+  useLockBodyScroll();
   return (
     <div
       className="fixed inset-0 bg-ink/80 flex items-center justify-center px-4 z-[60]"

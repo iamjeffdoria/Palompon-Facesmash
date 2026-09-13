@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Camera, X } from "lucide-react";
 import { uploadToCloudinary } from "../lib/uploadPhoto";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 export default function EditProfileModal({
   initialFirstName,
   initialLastName,
@@ -20,6 +21,7 @@ export default function EditProfileModal({
   const [photoPreview, setPhotoPreview] = useState<string | null>(initialPhotoURL);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  useLockBodyScroll();
   function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;

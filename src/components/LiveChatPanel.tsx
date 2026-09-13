@@ -3,6 +3,7 @@ import { MessageCircle, Send, X } from "lucide-react";
 import { useLiveChat } from "../hooks/useLiveChat";
 import { sendChatMessage, deleteChatMessage } from "../lib/chat";
 import ChatMessageRow from "./ChatMessageRow";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 export default function LiveChatPanel({
   myUid,
@@ -20,6 +21,7 @@ export default function LiveChatPanel({
   const [sending, setSending] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [mobileModalOpen, setMobileModalOpen] = useState(false);
+  useLockBodyScroll(mobileModalOpen);
   const lastSentAtRef = useRef(0);
   const SEND_COOLDOWN_MS = 1500;
   const desktopScrollRef = useRef<HTMLDivElement>(null);

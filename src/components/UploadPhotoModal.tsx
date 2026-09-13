@@ -4,6 +4,7 @@ import type { Area } from "react-easy-crop";
 import { Camera, Flame, Swords, Layers } from "lucide-react";
 import { getCroppedImg } from "../lib/cropImage";
 import { PALOMPON_BARANGAYS } from "../lib/barangays";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 export type UploadDestination = "match" | "smash" | "both";
 
@@ -28,7 +29,8 @@ export default function UploadPhotoModal({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  useLockBodyScroll();
+  
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;

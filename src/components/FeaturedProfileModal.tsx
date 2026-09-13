@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Sparkles, X, UserPlus, Crown } from "lucide-react";
 import { useFeaturedAndNewest } from "../hooks/useFeaturedAndNewest";
-
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 export default function FeaturedProfileModal() {
   const [open, setOpen] = useState(false);
   const { featured, newest, loading } = useFeaturedAndNewest();
+  useLockBodyScroll(open);
 
   return (
     <>

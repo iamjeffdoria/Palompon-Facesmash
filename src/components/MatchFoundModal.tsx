@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { doc, onSnapshot } from "firebase/firestore";
 import { Share2 } from "lucide-react";
 import { db } from "../lib/firebase";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface MatchSide {
   uid: string;
@@ -23,7 +24,8 @@ export default function MatchFoundModal({
 }) {
   const [matchId, setMatchId] = useState<string | null>(null);
   const [opponent, setOpponent] = useState<MatchSide | null>(null);
-
+  useLockBodyScroll();
+  
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "photos", photoId), (snap) => {
       const data = snap.data();

@@ -1,4 +1,4 @@
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc } from "firebase/firestore";
 import { db } from "./firebase";
 interface ChatSender {
   uid: string;
@@ -16,4 +16,7 @@ export async function sendChatMessage(sender: ChatSender, text: string) {
     text: trimmed,
     createdAt: Date.now(),
   });
+}
+export async function deleteChatMessage(messageId: string) {
+  await deleteDoc(doc(db, "chatMessages", messageId));
 }
